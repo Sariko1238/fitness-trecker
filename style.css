@@ -1,0 +1,3034 @@
+/* ==========================================================================
+   STRAVAPULSE AI — MODERN ATHLETIC DESIGN SYSTEM
+   Strava Signature Orange + Apple Fitness Activity Rings & Dark Mode First
+   ========================================================================== */
+
+:root {
+  /* Strava Palette */
+  --strava-orange: #FC4C02;
+  --strava-orange-hover: #E03E00;
+  --strava-orange-light: rgba(252, 76, 2, 0.12);
+  --strava-orange-glow: rgba(252, 76, 2, 0.35);
+
+  /* Apple Fitness Accents */
+  --apple-move: #FF2D55;
+  --apple-move-glow: rgba(255, 45, 85, 0.4);
+  --apple-exercise: #30D158;
+  --apple-exercise-glow: rgba(48, 209, 88, 0.4);
+  --apple-stand: #00E5FF;
+  --apple-stand-glow: rgba(0, 229, 255, 0.4);
+
+  --accent-purple: #BF5AF2;
+  --accent-blue: #0A84FF;
+  --accent-yellow: #FFD60A;
+
+  /* Typography */
+  --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Layout dimensions */
+  --sidebar-width: 270px;
+  --header-height: 72px;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-smooth: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --------------------------------------------------------------------------
+   DARK THEME (Default)
+   -------------------------------------------------------------------------- */
+[data-theme="dark"] {
+  --bg-app: #0B0C0E;
+  --bg-sidebar: #101115;
+  --bg-card: #16171D;
+  --bg-card-hover: #1D1E25;
+  --bg-surface: #22232B;
+  --bg-input: #131419;
+
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --border-accent: rgba(252, 76, 2, 0.3);
+
+  --text-main: #FFFFFF;
+  --text-secondary: #9FA4AF;
+  --text-tertiary: #656975;
+  --text-inverse: #0B0C0E;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
+  --shadow-strava: 0 6px 20px rgba(252, 76, 2, 0.25);
+
+  --chart-grid: rgba(255, 255, 255, 0.05);
+  --chart-text: #8E929E;
+}
+
+/* --------------------------------------------------------------------------
+   LIGHT THEME
+   -------------------------------------------------------------------------- */
+[data-theme="light"] {
+  --bg-app: #F5F6FA;
+  --bg-sidebar: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #F8F9FC;
+  --bg-surface: #EDEFF4;
+  --bg-input: #F3F4F8;
+
+  --border-subtle: #E5E7EB;
+  --border-strong: #D1D5DB;
+  --border-accent: rgba(252, 76, 2, 0.35);
+
+  --text-main: #111827;
+  --text-secondary: #4B5563;
+  --text-tertiary: #9CA3AF;
+  --text-inverse: #FFFFFF;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 16px 36px rgba(0, 0, 0, 0.1);
+  --shadow-strava: 0 6px 20px rgba(252, 76, 2, 0.2);
+
+  --chart-grid: rgba(0, 0, 0, 0.06);
+  --chart-text: #6B7280;
+}
+
+/* --------------------------------------------------------------------------
+   RESET & BASE STYLES
+   -------------------------------------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  border: none;
+  background: none;
+  outline: none;
+}
+
+button {
+  cursor: pointer;
+  user-select: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--strava-orange);
+}
+
+/* Helper Utilities */
+.hidden {
+  display: none !important;
+}
+
+.text-strava { color: var(--strava-orange) !important; }
+.text-green { color: var(--apple-exercise) !important; }
+.text-blue { color: var(--accent-blue) !important; }
+.text-cyan { color: var(--apple-stand) !important; }
+.text-purple { color: var(--accent-purple) !important; }
+.text-fire { color: #FF6433 !important; }
+
+/* --------------------------------------------------------------------------
+   LAYOUT: SIDEBAR & MAIN CONTENT
+   -------------------------------------------------------------------------- */
+.app-layout {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: var(--sidebar-width);
+  background-color: var(--bg-sidebar);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  transition: transform var(--transition-smooth), background-color var(--transition-normal);
+}
+
+.sidebar-header {
+  height: var(--header-height);
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #FC4C02, #FF7A00);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-strava);
+}
+
+.logo-icon-wrap i {
+  color: #FFFFFF;
+  font-size: 1.25rem;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: -0.5px;
+  color: var(--text-main);
+  line-height: 1.1;
+}
+
+.brand-accent {
+  color: var(--strava-orange);
+}
+
+.brand-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--strava-orange);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.mobile-close-btn {
+  display: none;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+}
+
+/* Sidebar User Card */
+.sidebar-user-card {
+  margin: 16px;
+  padding: 12px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  transition: border-color var(--transition-fast);
+}
+
+.sidebar-user-card:hover {
+  border-color: var(--border-strong);
+}
+
+.user-avatar-wrap {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+}
+
+.user-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  border: 2px solid var(--strava-orange);
+}
+
+.user-status-dot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 11px;
+  height: 11px;
+  border-radius: var(--radius-full);
+  background-color: var(--apple-exercise);
+  border: 2px solid var(--bg-card);
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-level {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-profile-edit {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.btn-profile-edit:hover {
+  color: var(--strava-orange);
+  background: var(--strava-orange-light);
+}
+
+/* Sidebar Nav */
+.sidebar-nav {
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.92rem;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.nav-item i {
+  font-size: 1.15rem;
+  width: 22px;
+  text-align: center;
+  transition: transform var(--transition-fast);
+}
+
+.nav-item:hover {
+  color: var(--text-main);
+  background: var(--bg-card);
+}
+
+.nav-item:hover i {
+  transform: scale(1.1);
+}
+
+.nav-item.active {
+  color: #FFFFFF;
+  background: linear-gradient(90deg, var(--strava-orange), #FF6727);
+  box-shadow: var(--shadow-strava);
+  font-weight: 600;
+}
+
+.nav-item.active i {
+  color: #FFFFFF;
+}
+
+.nav-badge {
+  margin-left: auto;
+  font-size: 0.72rem;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.nav-item.active .nav-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+}
+
+.nav-badge.ai-badge {
+  background: var(--accent-purple);
+  color: #FFFFFF;
+}
+
+.nav-badge.cal-badge {
+  font-size: 0.68rem;
+}
+
+.nav-badge.sync-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  background-color: var(--apple-exercise);
+  box-shadow: 0 0 8px var(--apple-exercise-glow);
+}
+
+/* Sidebar Action */
+.sidebar-action {
+  padding: 14px 16px;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+  padding: 14px 16px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-toggle-btn, .lang-toggle-btn {
+  height: 34px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.icon-toggle-btn {
+  width: 34px;
+}
+
+.icon-toggle-btn:hover, .lang-toggle-btn:hover {
+  border-color: var(--strava-orange);
+  color: var(--strava-orange);
+}
+
+.lang-toggle-btn {
+  padding: 0 10px;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.health-status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+}
+
+.apple-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-full);
+  background-color: var(--apple-exercise);
+  box-shadow: 0 0 6px var(--apple-exercise-glow);
+}
+
+/* --------------------------------------------------------------------------
+   MAIN CONTENT AREA
+   -------------------------------------------------------------------------- */
+.main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left var(--transition-smooth);
+}
+
+/* Top Header */
+.top-header {
+  height: var(--header-height);
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-app);
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  backdrop-filter: blur(12px);
+}
+
+.top-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mobile-menu-btn {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  align-items: center;
+  justify-content: center;
+  color: var(--text-main);
+  font-size: 1.1rem;
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.45rem;
+  letter-spacing: -0.5px;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+.page-subtitle {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.top-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Tab panes container */
+.tab-content-container {
+  padding: 28px 32px 80px 32px;
+  flex: 1;
+}
+
+.tab-pane {
+  display: none;
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   BUTTONS & BADGES
+   -------------------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  padding: 10px 18px;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-sm {
+  padding: 7px 13px;
+  font-size: 0.85rem;
+  border-radius: var(--radius-sm);
+}
+
+.btn-lg {
+  padding: 13px 24px;
+  font-size: 1rem;
+  border-radius: var(--radius-md);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-primary {
+  background-color: var(--strava-orange);
+  color: #FFFFFF;
+  box-shadow: var(--shadow-strava);
+}
+
+.btn-primary:hover {
+  background-color: var(--strava-orange-hover);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background-color: var(--bg-surface);
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+}
+
+.btn-secondary:hover {
+  background-color: var(--bg-card-hover);
+  border-color: var(--border-strong);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--text-main);
+  border: 1px solid var(--border-strong);
+}
+
+.btn-outline:hover {
+  border-color: var(--strava-orange);
+  color: var(--strava-orange);
+  background: var(--strava-orange-light);
+}
+
+.btn-outline-danger {
+  background: transparent;
+  color: #FF453A;
+  border: 1px solid rgba(255, 69, 58, 0.3);
+}
+
+.btn-outline-danger:hover {
+  background: rgba(255, 69, 58, 0.1);
+  border-color: #FF453A;
+}
+
+.btn-pulse {
+  position: relative;
+  overflow: hidden;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.badge-strava { background: var(--strava-orange-light); color: var(--strava-orange); }
+.badge-green { background: rgba(48, 209, 88, 0.15); color: var(--apple-exercise); }
+.badge-blue { background: rgba(10, 132, 255, 0.15); color: var(--accent-blue); }
+.badge-purple { background: rgba(191, 90, 242, 0.15); color: var(--accent-purple); }
+.badge-fire { background: rgba(255, 100, 51, 0.15); color: #FF6433; }
+.badge-cyan { background: rgba(0, 229, 255, 0.15); color: var(--apple-stand); }
+.badge-subtle { background: var(--bg-surface); color: var(--text-secondary); }
+.badge-online { background: rgba(48, 209, 88, 0.15); color: var(--apple-exercise); }
+
+.dot-online {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background-color: var(--apple-exercise);
+  box-shadow: 0 0 6px var(--apple-exercise-glow);
+}
+
+/* --------------------------------------------------------------------------
+   CARDS GENERAL STYLING
+   -------------------------------------------------------------------------- */
+.card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.card:hover {
+  border-color: var(--border-strong);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   TAB 1: DASHBOARD & PROGRESS
+   -------------------------------------------------------------------------- */
+.dashboard-controls {
+  margin-bottom: 24px;
+}
+
+.welcome-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.welcome-text h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.6rem;
+  letter-spacing: -0.5px;
+}
+
+.welcome-text p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-top: 2px;
+}
+
+.timeframe-selector {
+  display: flex;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  gap: 4px;
+}
+
+.timeframe-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.timeframe-btn:hover {
+  color: var(--text-main);
+}
+
+.timeframe-btn.active {
+  background: var(--strava-orange);
+  color: #FFFFFF;
+}
+
+/* Hero Grid: Rings + 4 KPIs */
+.metrics-hero-grid {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+/* Apple Rings Card */
+.card-rings {
+  background: linear-gradient(145deg, var(--bg-card), var(--bg-surface));
+  display: flex;
+  flex-direction: column;
+}
+
+.rings-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  margin-top: 8px;
+}
+
+.rings-canvas-wrap {
+  position: relative;
+  width: 180px;
+  height: 180px;
+}
+
+.rings-center-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.5rem;
+  pointer-events: none;
+}
+
+.rings-legend {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ring-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+
+.ring-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.move-dot { background-color: var(--apple-move); box-shadow: 0 0 8px var(--apple-move-glow); }
+.exercise-dot { background-color: var(--apple-exercise); box-shadow: 0 0 8px var(--apple-exercise-glow); }
+.stand-dot { background-color: var(--apple-stand); box-shadow: 0 0 8px var(--apple-stand-glow); }
+
+.ring-stat-info {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 0.82rem;
+}
+
+.ring-stat-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.ring-stat-val strong {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+/* KPI Cards Grid */
+.kpi-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.kpi-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+}
+
+.kpi-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.card-kpi-orange .kpi-icon-wrap { background: var(--strava-orange-light); color: var(--strava-orange); }
+.card-kpi-fire .kpi-icon-wrap { background: rgba(255, 100, 51, 0.15); color: #FF6433; }
+.card-kpi-blue .kpi-icon-wrap { background: rgba(10, 132, 255, 0.15); color: var(--accent-blue); }
+.card-kpi-purple .kpi-icon-wrap { background: rgba(191, 90, 242, 0.15); color: var(--accent-purple); }
+
+.heart-beat i {
+  animation: pulseBeat 1.8s infinite;
+}
+
+@keyframes pulseBeat {
+  0% { transform: scale(1); }
+  14% { transform: scale(1.2); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.15); }
+  70% { transform: scale(1); }
+}
+
+.kpi-content {
+  flex: 1;
+}
+
+.kpi-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.kpi-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.kpi-number {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 2rem;
+  color: var(--text-main);
+  letter-spacing: -1px;
+  line-height: 1.1;
+}
+
+.kpi-unit {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+}
+
+.kpi-subtext {
+  font-size: 0.75rem;
+  color: var(--apple-exercise);
+  display: block;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+/* Charts Grid */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.chart-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-container {
+  position: relative;
+  height: 280px;
+  width: 100%;
+}
+
+.chart-container-split {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  align-items: center;
+  gap: 20px;
+  min-height: 280px;
+}
+
+.chart-half {
+  position: relative;
+  height: 220px;
+  width: 180px;
+}
+
+.macros-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.macro-stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+}
+
+.macro-stat-head {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 0.82rem;
+}
+
+.macro-stat-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.macro-dot-mini {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+}
+
+/* --------------------------------------------------------------------------
+   TAB 2: WORKOUTS FEED (STRAVA FEED)
+   -------------------------------------------------------------------------- */
+.feed-toolbar {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.toolbar-search {
+  position: relative;
+  flex: 1;
+  min-width: 240px;
+}
+
+.toolbar-search .search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+}
+
+.toolbar-search input {
+  width: 100%;
+  height: 42px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0 16px 0 40px;
+  color: var(--text-main);
+  transition: border-color var(--transition-fast);
+}
+
+.toolbar-search input:focus {
+  border-color: var(--strava-orange);
+}
+
+.toolbar-filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.form-select {
+  height: 42px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0 14px;
+  color: var(--text-main);
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.form-select:focus {
+  border-color: var(--strava-orange);
+}
+
+.feed-summary-pills {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.summary-pill {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.summary-pill strong {
+  color: var(--text-main);
+  font-family: var(--font-display);
+}
+
+/* Strava Feed Cards */
+.strava-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.strava-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.strava-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+}
+
+.strava-card-header {
+  padding: 18px 22px 14px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.athlete-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.athlete-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+}
+
+.athlete-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.athlete-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+.activity-time-stamp {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.activity-badge-sport {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: var(--strava-orange-light);
+  color: var(--strava-orange);
+}
+
+.card-actions-menu {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-icon-action {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  transition: all var(--transition-fast);
+}
+
+.btn-icon-action:hover {
+  color: var(--text-main);
+  background: var(--bg-surface);
+}
+
+.btn-icon-action.delete-action:hover {
+  color: #FF453A;
+  background: rgba(255, 69, 58, 0.12);
+}
+
+/* Card Body */
+.strava-card-body {
+  padding: 0 22px 16px 22px;
+}
+
+.activity-headline {
+  margin-bottom: 8px;
+}
+
+.activity-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: -0.3px;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+.activity-notes {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin-top: 6px;
+}
+
+/* PR Trophy Badge */
+.pr-badge-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.badge-pr {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, rgba(255, 214, 10, 0.18), rgba(255, 159, 10, 0.15));
+  border: 1px solid rgba(255, 214, 10, 0.4);
+  color: #FFD60A;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  box-shadow: 0 0 12px rgba(255, 214, 10, 0.2);
+}
+
+/* Big Metrics Grid */
+.activity-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.stat-metric-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-metric-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-tertiary);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.stat-metric-val {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.35rem;
+  color: var(--text-main);
+  letter-spacing: -0.5px;
+}
+
+.stat-metric-val small {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-left: 2px;
+}
+
+/* Mini visual / route snippet preview */
+.activity-visual-track {
+  height: 48px;
+  margin-top: 16px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+}
+
+.activity-visual-track svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Card Footer: Kudos & Comments */
+.strava-card-footer {
+  padding: 12px 22px;
+  background: var(--bg-card-hover);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kudos-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-kudos {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  transition: all var(--transition-fast);
+}
+
+.btn-kudos:hover {
+  color: var(--strava-orange);
+  border-color: var(--strava-orange);
+}
+
+.btn-kudos.kudos-given {
+  background: var(--strava-orange);
+  color: #FFFFFF;
+  border-color: var(--strava-orange);
+  box-shadow: var(--shadow-strava);
+}
+
+.btn-kudos.kudos-given i {
+  animation: heartPop 0.4s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+}
+
+@keyframes heartPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
+.activity-device-tag {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--bg-card);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+}
+
+.empty-icon-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-full);
+  background: var(--strava-orange-light);
+  color: var(--strava-orange);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin: 0 auto 16px auto;
+}
+
+.empty-state h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin-bottom: 6px;
+}
+
+.empty-state p {
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  margin-bottom: 18px;
+}
+
+/* --------------------------------------------------------------------------
+   TAB 3: NUTRITION DIARY & MACROS
+   -------------------------------------------------------------------------- */
+.nutrition-dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.nutrition-date-picker-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.date-nav-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.date-nav-btn:hover {
+  color: var(--text-main);
+  border-color: var(--strava-orange);
+}
+
+.date-display-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  height: 38px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.date-display-box i {
+  color: var(--strava-orange);
+}
+
+/* Nutrition Summary Grid */
+.nutrition-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 340px;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.nutrition-cal-card {
+  display: flex;
+  align-items: center;
+}
+
+.cal-card-content {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+
+.cal-circle-container {
+  width: 130px;
+  height: 130px;
+  border-radius: var(--radius-full);
+  background: conic-gradient(var(--strava-orange) 0% 70%, var(--bg-surface) 70% 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 0 20px var(--strava-orange-glow);
+  flex-shrink: 0;
+}
+
+.cal-circle-container::before {
+  content: "";
+  position: absolute;
+  width: 106px;
+  height: 106px;
+  border-radius: var(--radius-full);
+  background: var(--bg-card);
+}
+
+.cal-number-wrap {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.cal-large-num {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--text-main);
+}
+
+.cal-sub-label {
+  font-size: 0.65rem;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-top: 3px;
+}
+
+.cal-breakdown-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.cal-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.cal-detail-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.cal-detail-val {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.cal-detail-val small {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+}
+
+/* Macros Progress Card */
+.macros-progress-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.macros-bars-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.macro-bar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.macro-bar-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+}
+
+.macro-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.dot-protein { width: 8px; height: 8px; border-radius: var(--radius-full); background: var(--apple-move); }
+.dot-fat { width: 8px; height: 8px; border-radius: var(--radius-full); background: var(--accent-yellow); }
+.dot-carbs { width: 8px; height: 8px; border-radius: var(--radius-full); background: var(--apple-stand); }
+
+.progress-bar-track {
+  height: 8px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fill-protein { background: var(--apple-move); box-shadow: 0 0 8px var(--apple-move-glow); }
+.fill-fat { background: var(--accent-yellow); box-shadow: 0 0 8px rgba(255, 214, 10, 0.4); }
+.fill-carbs { background: var(--apple-stand); box-shadow: 0 0 8px var(--apple-stand-glow); }
+
+/* Water Tracker Card */
+.water-tracker-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.water-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.water-counter {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.water-amount {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.5rem;
+  color: var(--apple-stand);
+}
+
+.water-amount small {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.water-cups-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.water-cup-icon {
+  width: 24px;
+  height: 28px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  background: var(--bg-surface);
+  color: var(--text-tertiary);
+  transition: all var(--transition-fast);
+}
+
+.water-cup-icon.filled {
+  background: rgba(0, 229, 255, 0.2);
+  color: var(--apple-stand);
+  box-shadow: 0 0 6px var(--apple-stand-glow);
+}
+
+.water-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.water-add-btn {
+  flex: 1;
+  background: var(--apple-stand);
+  color: #000000;
+  box-shadow: 0 4px 14px var(--apple-stand-glow);
+}
+
+.water-add-btn:hover {
+  background: #25ecff;
+}
+
+/* Meals Categories Grid */
+.meals-categories-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.meal-category-block {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 14px;
+}
+
+.category-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cat-icon-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.cat-breakfast { background: rgba(255, 149, 0, 0.15); color: #FF9500; }
+.cat-lunch { background: rgba(52, 199, 89, 0.15); color: #34C759; }
+.cat-dinner { background: rgba(88, 86, 214, 0.15); color: #5856D6; }
+.cat-snack { background: rgba(255, 45, 85, 0.15); color: #FF2D55; }
+
+.category-title-wrap h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  line-height: 1.2;
+}
+
+.category-cal-sub {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  font-weight: 600;
+}
+
+.btn-quick-add-cat {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.btn-quick-add-cat:hover {
+  background: var(--strava-orange);
+  color: #FFFFFF;
+}
+
+.meals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 50px;
+}
+
+.meal-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast);
+}
+
+.meal-item-row:hover {
+  background: var(--bg-card-hover);
+}
+
+.meal-item-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.meal-item-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+
+.meal-item-macros {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+.meal-item-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.meal-item-cal {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--strava-orange);
+}
+
+.meal-item-actions {
+  display: flex;
+  gap: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   TAB 4: SYNC & APPLE HEALTH & CSV
+   -------------------------------------------------------------------------- */
+.sync-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Hero Apple Health Card */
+.sync-hero-card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #181920 0%, #121317 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  align-items: center;
+  gap: 32px;
+  padding: 36px 40px;
+}
+
+[data-theme="light"] .sync-hero-card {
+  background: linear-gradient(135deg, #FFFFFF 0%, #F4F6FB 100%);
+  border-color: #E2E6EE;
+}
+
+.sync-hero-glow {
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 320px;
+  height: 320px;
+  border-radius: var(--radius-full);
+  background: radial-gradient(circle, rgba(252, 76, 2, 0.25) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.sync-hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.sync-apple-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.sync-hero-card h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.8rem;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+
+.sync-hero-card p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  max-width: 620px;
+  margin-bottom: 20px;
+}
+
+.sync-features-list {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 26px;
+  flex-wrap: wrap;
+}
+
+.sync-feat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.sync-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.pulse-shadow {
+  box-shadow: 0 0 25px rgba(252, 76, 2, 0.4);
+}
+
+/* Apple Watch Device Mock */
+.sync-watch-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.apple-watch-frame {
+  width: 170px;
+  height: 210px;
+  border-radius: 42px;
+  background: #23252E;
+  padding: 10px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.2);
+  border: 3px solid #3A3D4C;
+}
+
+.watch-screen {
+  width: 100%;
+  height: 100%;
+  border-radius: 32px;
+  background: #000000;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #FFFFFF;
+}
+
+.watch-time {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-align: right;
+  color: var(--apple-exercise);
+}
+
+.watch-ring-mini {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.heart-pulse-anim {
+  color: var(--apple-move);
+  font-size: 1.2rem;
+  animation: pulseBeat 1.4s infinite;
+}
+
+.watch-hr-val {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.6rem;
+}
+
+.watch-ring-mini small {
+  font-size: 0.65rem;
+  color: var(--apple-move);
+}
+
+.watch-metrics {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 6px;
+}
+
+.watch-metrics div {
+  display: flex;
+  flex-direction: column;
+}
+
+.watch-metrics span {
+  color: #777;
+  font-size: 0.6rem;
+}
+
+.watch-metrics strong {
+  font-family: var(--font-display);
+  color: var(--strava-orange);
+}
+
+.watch-status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(48, 209, 88, 0.15);
+  font-size: 0.6rem;
+  color: var(--apple-exercise);
+  font-weight: 700;
+}
+
+/* CSV Dropzone Card */
+.csv-import-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.dropzone {
+  margin-top: 10px;
+  position: relative;
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  background: var(--bg-surface);
+  transition: all var(--transition-fast);
+}
+
+.dropzone:hover, .dropzone.dragover {
+  border-color: var(--strava-orange);
+  background: var(--strava-orange-light);
+}
+
+.dropzone-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.dropzone-icon {
+  font-size: 2.5rem;
+  color: var(--strava-orange);
+  margin-bottom: 12px;
+}
+
+.dropzone-inner h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 4px;
+}
+
+.dropzone-inner p {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  margin-bottom: 16px;
+}
+
+.import-log {
+  margin-top: 18px;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  background: rgba(48, 209, 88, 0.1);
+  border: 1px solid rgba(48, 209, 88, 0.3);
+}
+
+.import-log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  color: var(--apple-exercise);
+  margin-bottom: 4px;
+}
+
+.log-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* Export Hub */
+.export-options-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.export-tile {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.export-icon {
+  font-size: 1.8rem;
+}
+
+.export-meta h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+
+.export-meta p {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+/* --------------------------------------------------------------------------
+   TAB 5: AI FITNESS COACH
+   -------------------------------------------------------------------------- */
+.coach-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  min-height: calc(100vh - 200px);
+}
+
+.coach-context-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.coach-avatar-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.coach-avatar-ring {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--accent-purple), #8E2DE2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 0 16px rgba(191, 90, 242, 0.4);
+}
+
+.coach-robot-icon {
+  font-size: 1.6rem;
+  color: #FFFFFF;
+}
+
+.coach-pulse-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--accent-purple);
+  animation: pulseExpand 2s infinite;
+}
+
+@keyframes pulseExpand {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+.coach-avatar-text h3 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
+.coach-data-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.coach-stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.c-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.c-stat-row span {
+  color: var(--text-secondary);
+}
+
+.c-stat-row strong {
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.coach-settings-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.engine-toggle-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.engine-radio-label {
+  display: flex;
+  cursor: pointer;
+}
+
+.engine-radio-label input {
+  display: none;
+}
+
+.radio-card {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  transition: all var(--transition-fast);
+}
+
+.engine-radio-label input:checked + .radio-card {
+  border-color: var(--accent-purple);
+  background: rgba(191, 90, 242, 0.1);
+}
+
+.radio-card strong {
+  font-size: 0.85rem;
+  color: var(--text-main);
+}
+
+.radio-card small {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.api-key-input-wrap {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.api-key-input-wrap label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.helper-text {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+}
+
+/* Coach Right Chat Panel */
+.coach-chat-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 160px);
+  position: relative;
+  overflow: hidden;
+}
+
+.quick-prompts-bar {
+  padding: 12px 18px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.quick-prompts-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.prompts-scroll-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.prompt-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.prompt-chip:hover {
+  border-color: var(--strava-orange);
+  color: var(--text-main);
+  background: var(--bg-card-hover);
+}
+
+/* Chat Messages */
+.chat-messages-container {
+  flex: 1;
+  padding: 20px 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.chat-msg {
+  display: flex;
+  gap: 12px;
+  max-width: 85%;
+}
+
+.chat-msg.ai-msg {
+  align-self: flex-start;
+}
+
+.chat-msg.user-msg {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.chat-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.95rem;
+}
+
+.ai-msg .chat-avatar {
+  background: var(--accent-purple);
+  color: #FFFFFF;
+}
+
+.user-msg .chat-avatar {
+  background: var(--strava-orange);
+  color: #FFFFFF;
+}
+
+.chat-bubble {
+  padding: 14px 18px;
+  border-radius: var(--radius-lg);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.ai-msg .chat-bubble {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-top-left-radius: 4px;
+}
+
+.user-msg .chat-bubble {
+  background: var(--strava-orange);
+  color: #FFFFFF;
+  border-top-right-radius: 4px;
+  box-shadow: var(--shadow-strava);
+}
+
+.chat-bubble-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.ai-msg .chat-bubble-header strong {
+  color: var(--accent-purple);
+}
+
+.user-msg .chat-bubble-header {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.user-msg .chat-bubble-header strong {
+  color: #FFFFFF;
+}
+
+.chat-bubble-text {
+  word-break: break-word;
+}
+
+.chat-bubble-text p {
+  margin-bottom: 8px;
+}
+
+.chat-bubble-text p:last-child {
+  margin-bottom: 0;
+}
+
+.chat-bubble-text ul {
+  margin: 6px 0 8px 18px;
+}
+
+.chat-bubble-text li {
+  margin-bottom: 4px;
+}
+
+.chat-bubble-text strong {
+  color: var(--text-main);
+}
+
+.user-msg .chat-bubble-text strong {
+  color: #FFFFFF;
+}
+
+/* Typing Indicator */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 24px 14px 24px;
+}
+
+.typing-bubble {
+  padding: 12px 18px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-full);
+  display: flex;
+  gap: 5px;
+}
+
+.typing-bubble span {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-full);
+  background: var(--text-tertiary);
+  animation: typingDot 1.4s infinite ease-in-out both;
+}
+
+.typing-bubble span:nth-child(1) { animation-delay: -0.32s; }
+.typing-bubble span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes typingDot {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+/* Chat Input Bar */
+.chat-input-wrapper {
+  padding: 14px 20px;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+}
+
+.chat-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chat-form input {
+  flex: 1;
+  height: 46px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  padding: 0 20px;
+  color: var(--text-main);
+  transition: border-color var(--transition-fast);
+}
+
+.chat-form input:focus {
+  border-color: var(--accent-purple);
+}
+
+.btn-chat-send {
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-full);
+  padding: 0;
+  background: var(--accent-purple);
+  color: #FFFFFF;
+}
+
+.btn-chat-send:hover {
+  background: #a540dc;
+}
+
+.chat-footer-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  padding: 0 6px;
+}
+
+.btn-text-subtle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  transition: color var(--transition-fast);
+}
+
+.btn-text-subtle:hover {
+  color: #FF453A;
+}
+
+.chat-disclaimer {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+}
+
+/* --------------------------------------------------------------------------
+   MODALS & DIALOGS
+   -------------------------------------------------------------------------- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: modalFadeIn 0.25s ease forwards;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-dialog {
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 580px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalSlideUp {
+  from { transform: translateY(20px) scale(0.97); }
+  to { transform: translateY(0) scale(1); }
+}
+
+.modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.3rem;
+  color: var(--text-main);
+}
+
+.modal-close-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.modal-close-btn:hover {
+  color: var(--text-main);
+  background: var(--bg-surface);
+}
+
+.modal-form {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  display: flex;
+  gap: 14px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.flex-1 { flex: 1; }
+.flex-2 { flex: 2; }
+
+.form-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.form-control {
+  height: 42px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0 14px;
+  color: var(--text-main);
+  transition: border-color var(--transition-fast);
+}
+
+textarea.form-control {
+  height: auto;
+  padding: 10px 14px;
+  resize: vertical;
+}
+
+.form-control:focus {
+  border-color: var(--strava-orange);
+}
+
+.modal-metric-preview {
+  background: var(--strava-orange-light);
+  border: 1px solid rgba(252, 76, 2, 0.3);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.preview-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--strava-orange);
+}
+
+.preview-val {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--text-main);
+}
+
+.modal-footer {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* Apple Watch Live Sync Modal */
+.modal-dialog-sync {
+  max-width: 480px;
+  text-align: center;
+}
+
+.sync-animation-container {
+  padding: 36px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.radar-box {
+  width: 140px;
+  height: 140px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.radar-circle {
+  position: absolute;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--strava-orange);
+  opacity: 0;
+  animation: radarWave 2.4s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+.radar-1 { width: 60px; height: 60px; animation-delay: 0s; }
+.radar-2 { width: 100px; height: 100px; animation-delay: 0.8s; }
+.radar-3 { width: 140px; height: 140px; animation-delay: 1.6s; }
+
+@keyframes radarWave {
+  0% { transform: scale(0.4); opacity: 0.9; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+.radar-center {
+  width: 58px;
+  height: 58px;
+  border-radius: var(--radius-full);
+  background: var(--strava-orange);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 25px var(--strava-orange-glow);
+  z-index: 2;
+}
+
+.apple-icon-pulsing {
+  color: #FFFFFF;
+  font-size: 1.8rem;
+}
+
+.sync-dialog-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.35rem;
+  margin-bottom: 6px;
+}
+
+.sync-dialog-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  margin-bottom: 24px;
+}
+
+.sync-steps-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 28px;
+  text-align: left;
+}
+
+.sync-step-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+}
+
+.sync-step-row.active {
+  color: var(--strava-orange);
+  font-weight: 600;
+}
+
+.sync-step-row.completed {
+  color: var(--apple-exercise);
+}
+
+.step-indicator {
+  width: 22px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.sync-modal-footer {
+  width: 100%;
+}
+
+/* Settings Modal Specifics */
+.settings-danger-zone {
+  margin-top: 10px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 69, 58, 0.08);
+  border: 1px solid rgba(255, 69, 58, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-danger-zone h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: #FF453A;
+}
+
+.settings-danger-zone p {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+/* --------------------------------------------------------------------------
+   TOAST NOTIFICATIONS
+   -------------------------------------------------------------------------- */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow-lg);
+  font-size: 0.88rem;
+  min-width: 280px;
+  max-width: 400px;
+  animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes toastIn {
+  from { transform: translateX(50px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.toast.toast-success i { color: var(--apple-exercise); }
+.toast.toast-error i { color: #FF453A; }
+.toast.toast-info i { color: var(--strava-orange); }
+
+.toast-msg {
+  flex: 1;
+  color: var(--text-main);
+  font-weight: 500;
+}
+
+/* --------------------------------------------------------------------------
+   MOBILE BOTTOM NAVIGATION BAR
+   -------------------------------------------------------------------------- */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-subtle);
+  z-index: 95;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 8px;
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--text-secondary);
+  font-size: 0.68rem;
+  font-weight: 600;
+  flex: 1;
+  height: 100%;
+}
+
+.mobile-nav-item i {
+  font-size: 1.15rem;
+}
+
+.mobile-nav-item.active {
+  color: var(--strava-orange);
+}
+
+/* --------------------------------------------------------------------------
+   RESPONSIVENESS & ADAPTIVE BREAKPOINTS
+   -------------------------------------------------------------------------- */
+@media (max-width: 1200px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  .nutrition-summary-grid {
+    grid-template-columns: 1fr;
+  }
+  .metrics-hero-grid {
+    grid-template-columns: 1fr;
+  }
+  .sync-hero-card {
+    grid-template-columns: 1fr;
+  }
+  .sync-watch-visual {
+    display: none;
+  }
+  .coach-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  :root {
+    --sidebar-width: 0px;
+  }
+
+  .sidebar {
+    transform: translateX(-100%);
+    width: 280px;
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+  }
+
+  .mobile-close-btn {
+    display: flex;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
+
+  .mobile-bottom-nav {
+    display: flex;
+  }
+
+  .top-header {
+    padding: 0 20px;
+  }
+
+  .tab-content-container {
+    padding: 20px 20px 90px 20px;
+  }
+
+  .kpi-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .meals-categories-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .export-options-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .activity-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .top-header-right .sync-quick-btn {
+    display: none;
+  }
+  .form-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .activity-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

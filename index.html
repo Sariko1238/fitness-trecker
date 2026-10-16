@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StravaPulse AI — Трекер тренировок, Питания & ИИ-Тренер</title>
+  <meta name="description" content="Фитнес-трекер и аналитическая платформа в стиле Strava и Apple Fitness с ИИ-тренером, трекером питания и синхронизацией с Apple Health.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-logo">
+          <div class="logo-icon-wrap">
+            <i class="fa-solid fa-bolt-lightning pulse-icon"></i>
+          </div>
+          <div class="brand-text">
+            <span class="brand-title">STRAVA<span class="brand-accent">PULSE</span></span>
+            <span class="brand-badge">AI 2.0</span>
+          </div>
+        </div>
+        <button class="mobile-close-btn" id="mobileCloseBtn" aria-label="Close sidebar">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- User Profile Card in Sidebar -->
+      <div class="sidebar-user-card" id="sidebarUserCard">
+        <div class="user-avatar-wrap">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Avatar" class="user-avatar" id="sidebarAvatar">
+          <span class="user-status-dot" title="Active"></span>
+        </div>
+        <div class="user-info">
+          <h4 class="user-name" id="profileNameDisplay">Алексей Романов</h4>
+          <span class="user-level" id="profileLevelDisplay">🏃 Про-Атлет • 72 кг</span>
+        </div>
+        <button class="btn-profile-edit" id="openSettingsBtn" title="Настройки профиля">
+          <i class="fa-solid fa-gear"></i>
+        </button>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-tab="dashboard">
+          <i class="fa-solid fa-chart-line"></i>
+          <span data-i18n="navDashboard">Дашборд & Графики</span>
+        </button>
+        <button class="nav-item" data-tab="workouts">
+          <i class="fa-solid fa-person-running"></i>
+          <span data-i18n="navWorkouts">Лента тренировок</span>
+          <span class="nav-badge" id="workoutsCountBadge">0</span>
+        </button>
+        <button class="nav-item" data-tab="nutrition">
+          <i class="fa-solid fa-utensils"></i>
+          <span data-i18n="navNutrition">Дневник питания</span>
+          <span class="nav-badge cal-badge" id="calTodayBadge">0 ккал</span>
+        </button>
+        <button class="nav-item" data-tab="sync">
+          <i class="fa-brands fa-apple"></i>
+          <span data-i18n="navSync">Apple Health & CSV</span>
+          <span class="nav-badge sync-dot" title="Синхронизация"></span>
+        </button>
+        <button class="nav-item" data-tab="coach">
+          <i class="fa-solid fa-robot"></i>
+          <span data-i18n="navCoach">ИИ-Тренер Pulse</span>
+          <span class="nav-badge ai-badge">AI</span>
+        </button>
+      </nav>
+
+      <!-- Quick Action / Add Workout button -->
+      <div class="sidebar-action">
+        <button class="btn btn-primary btn-block btn-pulse" id="sidebarAddWorkoutBtn">
+          <i class="fa-solid fa-plus"></i>
+          <span data-i18n="quickAddWorkout">Новая тренировка</span>
+        </button>
+      </div>
+
+      <!-- Sidebar Footer (Theme, Language, Sync Status) -->
+      <div class="sidebar-footer">
+        <div class="control-group">
+          <!-- Theme Switcher -->
+          <button class="icon-toggle-btn" id="themeToggleBtn" title="Переключить тему">
+            <i class="fa-solid fa-moon" id="themeIcon"></i>
+          </button>
+          <!-- Language Switcher -->
+          <button class="lang-toggle-btn" id="langToggleBtn" title="Switch Language">
+            <span class="lang-flag">🇷🇺</span>
+            <span class="lang-label" id="langLabel">RU</span>
+          </button>
+        </div>
+        <div class="health-status-indicator" id="healthStatusIndicator" title="Статус Apple Health">
+          <span class="apple-dot"></span>
+          <span class="status-text" data-i18n="healthKitReady">HealthKit готов</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Mobile Header & Quick Bar -->
+      <header class="top-header">
+        <div class="top-header-left">
+          <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open navigation menu">
+            <i class="fa-solid fa-bars-staggered"></i>
+          </button>
+          <div class="page-title-wrap">
+            <h1 class="page-title" id="pageTitle" data-i18n="titleDashboard">Дашборд и Аналитика</h1>
+            <p class="page-subtitle" id="pageSubtitle" data-i18n="subtitleDashboard">Сводка тренировок, энергии и прогресса</p>
+          </div>
+        </div>
+
+        <div class="top-header-right">
+          <!-- Quick Sync Button with Watch Animation -->
+          <button class="btn btn-outline btn-sm sync-quick-btn" id="quickAppleSyncBtn">
+            <i class="fa-brands fa-apple"></i>
+            <span data-i18n="quickSyncApple">Apple Health Sync</span>
+          </button>
+
+          <!-- Add Workout modal trigger -->
+          <button class="btn btn-primary btn-sm" id="topAddWorkoutBtn">
+            <i class="fa-solid fa-plus"></i>
+            <span data-i18n="btnNewActivity">Тренировка</span>
+          </button>
+
+          <!-- Add Meal modal trigger -->
+          <button class="btn btn-secondary btn-sm" id="topAddMealBtn">
+            <i class="fa-solid fa-utensils"></i>
+            <span data-i18n="btnNewMeal">Приём пищи</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- App Tabs Container -->
+      <div class="tab-content-container">
+
+        <!-- ======================================================== -->
+        <!-- TAB 1: DASHBOARD & PROGRESS ANALYTICS                     -->
+        <!-- ======================================================== -->
+        <section class="tab-pane active" id="tab-dashboard">
+          <!-- Filter bar for dashboard timeframes -->
+          <div class="dashboard-controls">
+            <div class="welcome-banner">
+              <div class="welcome-text">
+                <h2><span data-i18n="welcomeBack">С возвращением,</span> <span id="welcomeUserName">Алексей</span>! 🔥</h2>
+                <p data-i18n="dashboardGreeting">Отличный день для закрытия колец активности и личных рекордов.</p>
+              </div>
+              <div class="timeframe-selector" id="timeframeSelector">
+                <button class="timeframe-btn active" data-range="7" data-i18n="timeframe7d">7 дней</button>
+                <button class="timeframe-btn" data-range="30" data-i18n="timeframe30d">30 дней</button>
+                <button class="timeframe-btn" data-range="all" data-i18n="timeframeAll">Всё время</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Apple Activity Rings & Key Metrics Grid -->
+          <div class="metrics-hero-grid">
+            <!-- Apple Fitness Style Rings Card -->
+            <div class="card card-rings">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <i class="fa-solid fa-circle-notch ring-title-icon"></i>
+                  <span data-i18n="activityRingsTitle">Кольца активности</span>
+                </h3>
+                <span class="badge badge-subtle" data-i18n="ringsToday">Сегодня</span>
+              </div>
+              <div class="rings-body">
+                <div class="rings-canvas-wrap">
+                  <canvas id="ringsCanvas" width="180" height="180"></canvas>
+                  <div class="rings-center-icon">
+                    <i class="fa-solid fa-bolt text-strava"></i>
+                  </div>
+                </div>
+                <div class="rings-legend">
+                  <div class="ring-stat-row move-row">
+                    <span class="ring-dot move-dot"></span>
+                    <div class="ring-stat-info">
+                      <span class="ring-stat-label" data-i18n="ringMove">Движение</span>
+                      <span class="ring-stat-val"><strong id="ringMoveVal">640</strong> / <span id="ringMoveGoal">750</span> ккал</span>
+                    </div>
+                  </div>
+                  <div class="ring-stat-row exercise-row">
+                    <span class="ring-dot exercise-dot"></span>
+                    <div class="ring-stat-info">
+                      <span class="ring-stat-label" data-i18n="ringExercise">Упражнения</span>
+                      <span class="ring-stat-val"><strong id="ringExerciseVal">48</strong> / <span id="ringExerciseGoal">45</span> мин</span>
+                    </div>
+                  </div>
+                  <div class="ring-stat-row stand-row">
+                    <span class="ring-dot stand-dot"></span>
+                    <div class="ring-stat-info">
+                      <span class="ring-stat-label" data-i18n="ringWater">Вода / Баланс</span>
+                      <span class="ring-stat-val"><strong id="ringWaterVal">2000</strong> / <span id="ringWaterGoal">2500</span> мл</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Top Metric KPI Cards -->
+            <div class="kpi-cards-grid">
+              <!-- KPI: Total Distance -->
+              <div class="kpi-card card-kpi-orange">
+                <div class="kpi-icon-wrap">
+                  <i class="fa-solid fa-route"></i>
+                </div>
+                <div class="kpi-content">
+                  <span class="kpi-label" data-i18n="kpiTotalDistance">Дистанция</span>
+                  <div class="kpi-value-row">
+                    <span class="kpi-number" id="kpiDistance">46.8</span>
+                    <span class="kpi-unit" data-i18n="unitKm">км</span>
+                  </div>
+                  <span class="kpi-subtext" id="kpiDistanceSub">+12% vs прошлая нед.</span>
+                </div>
+              </div>
+
+              <!-- KPI: Calories Burned -->
+              <div class="kpi-card card-kpi-fire">
+                <div class="kpi-icon-wrap">
+                  <i class="fa-solid fa-fire"></i>
+                </div>
+                <div class="kpi-content">
+                  <span class="kpi-label" data-i18n="kpiCaloriesBurned">Сожжено ккал</span>
+                  <div class="kpi-value-row">
+                    <span class="kpi-number" id="kpiCalories">3,850</span>
+                    <span class="kpi-unit" data-i18n="unitKcal">ккал</span>
+                  </div>
+                  <span class="kpi-subtext" id="kpiCaloriesSub">Тренировочный расход</span>
+                </div>
+              </div>
+
+              <!-- KPI: Active Time -->
+              <div class="kpi-card card-kpi-blue">
+                <div class="kpi-icon-wrap">
+                  <i class="fa-regular fa-clock"></i>
+                </div>
+                <div class="kpi-content">
+                  <span class="kpi-label" data-i18n="kpiActiveTime">Время в движении</span>
+                  <div class="kpi-value-row">
+                    <span class="kpi-number" id="kpiTime">4ч 32м</span>
+                  </div>
+                  <span class="kpi-subtext" id="kpiTimeSub">6 тренировок</span>
+                </div>
+              </div>
+
+              <!-- KPI: Average Heart Rate -->
+              <div class="kpi-card card-kpi-purple">
+                <div class="kpi-icon-wrap heart-beat">
+                  <i class="fa-solid fa-heart-pulse"></i>
+                </div>
+                <div class="kpi-content">
+                  <span class="kpi-label" data-i18n="kpiAvgHeartRate">Средний пульс</span>
+                  <div class="kpi-value-row">
+                    <span class="kpi-number" id="kpiHeartRate">146</span>
+                    <span class="kpi-unit" data-i18n="unitBpm">уд/мин</span>
+                  </div>
+                  <span class="kpi-subtext" id="kpiHeartRateSub">Аэробная зона 2-3</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4 Interactive Charts Grid -->
+          <div class="charts-grid">
+            <!-- Chart 1: Training Load & Distance -->
+            <div class="card chart-card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">
+                    <i class="fa-solid fa-chart-column text-strava"></i>
+                    <span data-i18n="chartLoadTitle">Нагрузка и Дистанция по дням</span>
+                  </h3>
+                  <p class="card-subtitle" data-i18n="chartLoadSubtitle">Километраж и длительность тренировок</p>
+                </div>
+                <div class="chart-badges">
+                  <span class="badge badge-strava" data-i18n="badgeKm">Км</span>
+                  <span class="badge badge-blue" data-i18n="badgeMin">Мин</span>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="trainingLoadChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Chart 2: Energy Balance (Burned vs Consumed) -->
+            <div class="card chart-card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">
+                    <i class="fa-solid fa-scale-balanced text-green"></i>
+                    <span data-i18n="chartEnergyTitle">Энергетический баланс (Потреблено vs Сожжено)</span>
+                  </h3>
+                  <p class="card-subtitle" data-i18n="chartEnergySubtitle">Калории из питания против потраченных калорий</p>
+                </div>
+                <div class="chart-badges">
+                  <span class="badge badge-green" data-i18n="badgeFood">Питание</span>
+                  <span class="badge badge-fire" data-i18n="badgeBurned">Расход</span>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="energyBalanceChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Chart 3: Heart Rate & Pace Dynamics -->
+            <div class="card chart-card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">
+                    <i class="fa-solid fa-heart-pulse text-purple"></i>
+                    <span data-i18n="chartHrPaceTitle">Динамика пульса и темпа</span>
+                  </h3>
+                  <p class="card-subtitle" data-i18n="chartHrPaceSubtitle">Средний пульс и скорость по тренировкам</p>
+                </div>
+                <div class="chart-badges">
+                  <span class="badge badge-purple" data-i18n="badgeBpm">Пульс</span>
+                  <span class="badge badge-orange" data-i18n="badgePace">Темп</span>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="hrPaceChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Chart 4: Macronutrients Doughnut -->
+            <div class="card chart-card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">
+                    <i class="fa-solid fa-chart-pie text-cyan"></i>
+                    <span data-i18n="chartMacrosTitle">Баланс макронутриентов (БЖУ)</span>
+                  </h3>
+                  <p class="card-subtitle" data-i18n="chartMacrosSubtitle">Соотношение белков, жиров и углеводов</p>
+                </div>
+                <div class="chart-badges">
+                  <span class="badge badge-cyan" data-i18n="badgeToday">Сегодня</span>
+                </div>
+              </div>
+              <div class="chart-container-split">
+                <div class="chart-half">
+                  <canvas id="macrosDoughnutChart"></canvas>
+                </div>
+                <div class="macros-breakdown" id="macrosBreakdownList">
+                  <!-- Injected via JavaScript -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- TAB 2: WORKOUTS FEED (STRAVA FEED & CRUD)                -->
+        <!-- ======================================================== -->
+        <section class="tab-pane" id="tab-workouts">
+          <!-- Feed Controls and Filters -->
+          <div class="feed-toolbar">
+            <div class="toolbar-search">
+              <i class="fa-solid fa-magnifying-glass search-icon"></i>
+              <input type="text" id="workoutSearchInput" placeholder="Поиск по названию или заметкам..." data-i18n-placeholder="searchWorkoutsPlaceholder">
+            </div>
+
+            <div class="toolbar-filters">
+              <!-- Sport Type Filter -->
+              <div class="filter-group">
+                <label data-i18n="filterSport">Спорт:</label>
+                <select id="workoutSportFilter" class="form-select">
+                  <option value="all" data-i18n="sportAll">Все активности</option>
+                  <option value="Run" data-i18n="sportRun">🏃 Бег</option>
+                  <option value="Ride" data-i18n="sportRide">🚴 Велосипед</option>
+                  <option value="Swim" data-i18n="sportSwim">🏊 Плавание</option>
+                  <option value="Strength" data-i18n="sportStrength">🏋️ Силовая</option>
+                  <option value="Walk" data-i18n="sportWalk">🚶 Ходьба</option>
+                  <option value="HIIT" data-i18n="sportHIIT">⚡ HIIT / Кардио</option>
+                </select>
+              </div>
+
+              <!-- Sort Order -->
+              <div class="filter-group">
+                <label data-i18n="filterSort">Сортировка:</label>
+                <select id="workoutSortFilter" class="form-select">
+                  <option value="date-desc" data-i18n="sortDateDesc">Сначала новые</option>
+                  <option value="date-asc" data-i18n="sortDateAsc">Сначала старые</option>
+                  <option value="dist-desc" data-i18n="sortDistDesc">Макс. дистанция</option>
+                  <option value="cal-desc" data-i18n="sortCalDesc">Макс. калории</option>
+                  <option value="dur-desc" data-i18n="sortDurDesc">Макс. длительность</option>
+                </select>
+              </div>
+
+              <!-- Add Workout Primary Button -->
+              <button class="btn btn-primary" id="feedAddWorkoutBtn">
+                <i class="fa-solid fa-plus"></i>
+                <span data-i18n="btnRecordWorkout">Записать тренировку</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Feed Stat Summary Pills -->
+          <div class="feed-summary-pills" id="feedSummaryPills">
+            <!-- Dynamically calculated -->
+          </div>
+
+          <!-- Strava Activity Cards Container -->
+          <div class="strava-feed" id="stravaFeedContainer">
+            <!-- Cards will be populated dynamically -->
+          </div>
+
+          <!-- Empty State (hidden when workouts exist) -->
+          <div class="empty-state hidden" id="workoutsEmptyState">
+            <div class="empty-icon-wrap">
+              <i class="fa-solid fa-person-running"></i>
+            </div>
+            <h3 data-i18n="emptyWorkoutsTitle">Тренировок не найдено</h3>
+            <p data-i18n="emptyWorkoutsSub">Добавьте новую активность или измените параметры поиска.</p>
+            <button class="btn btn-primary" id="emptyAddWorkoutBtn">
+              <i class="fa-solid fa-plus"></i>
+              <span data-i18n="btnRecordWorkout">Записать тренировку</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- TAB 3: NUTRITION DIARY & MACROS (CRUD)                   -->
+        <!-- ======================================================== -->
+        <section class="tab-pane" id="tab-nutrition">
+          <!-- Daily Nutrition Header & Target Cards -->
+          <div class="nutrition-dashboard-header">
+            <div class="nutrition-date-picker-wrap">
+              <button class="date-nav-btn" id="nutPrevDayBtn" title="Предыдущий день">
+                <i class="fa-solid fa-chevron-left"></i>
+              </button>
+              <div class="date-display-box">
+                <i class="fa-regular fa-calendar-days"></i>
+                <span id="nutDateDisplay">Сегодня, 16 Октября</span>
+              </div>
+              <button class="date-nav-btn" id="nutNextDayBtn" title="Следующий день">
+                <i class="fa-solid fa-chevron-right"></i>
+              </button>
+              <button class="btn btn-outline btn-sm" id="nutTodayBtn" data-i18n="btnToday">Сегодня</button>
+            </div>
+
+            <button class="btn btn-primary" id="nutritionAddMealBtn">
+              <i class="fa-solid fa-plus"></i>
+              <span data-i18n="btnAddMeal">Добавить блюдо</span>
+            </button>
+          </div>
+
+          <!-- Nutrition Summary Hero (Calories + Macros progress bars + Water tracker) -->
+          <div class="nutrition-summary-grid">
+            <!-- Calorie Balance Card -->
+            <div class="card nutrition-cal-card">
+              <div class="cal-card-content">
+                <div class="cal-circle-container">
+                  <div class="cal-number-wrap">
+                    <span class="cal-large-num" id="nutConsumedTotal">1,920</span>
+                    <span class="cal-sub-label" data-i18n="labelKcalConsumed">съедено ккал</span>
+                  </div>
+                </div>
+                <div class="cal-breakdown-details">
+                  <div class="cal-detail-item">
+                    <span class="cal-detail-label" data-i18n="labelDailyTarget">Норма цели</span>
+                    <span class="cal-detail-val" id="nutDailyGoal">2,400 <small>ккал</small></span>
+                  </div>
+                  <div class="cal-detail-item">
+                    <span class="cal-detail-label" data-i18n="labelBurnedToday">Тренировки</span>
+                    <span class="cal-detail-val text-fire" id="nutBurnedToday">- 640 <small>ккал</small></span>
+                  </div>
+                  <div class="cal-detail-item">
+                    <span class="cal-detail-label" data-i18n="labelRemaining">Остаток</span>
+                    <span class="cal-detail-val text-green" id="nutRemainingCal">+ 1,120 <small>ккал</small></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Macros Linear Progress Bars Card -->
+            <div class="card macros-progress-card">
+              <h4 class="card-title">
+                <i class="fa-solid fa-dna text-cyan"></i>
+                <span data-i18n="dailyMacrosTitle">Баланс КБЖУ на день</span>
+              </h4>
+              <div class="macros-bars-list">
+                <!-- Protein -->
+                <div class="macro-bar-item">
+                  <div class="macro-bar-meta">
+                    <span class="macro-name"><strong class="dot-protein"></strong> <span data-i18n="macroProtein">Белки</span></span>
+                    <span class="macro-values"><strong id="nutProteinVal">125</strong> / <span id="nutProteinGoal">150</span> г</span>
+                  </div>
+                  <div class="progress-bar-track">
+                    <div class="progress-bar-fill fill-protein" id="nutProteinBar" style="width: 83%;"></div>
+                  </div>
+                </div>
+
+                <!-- Fat -->
+                <div class="macro-bar-item">
+                  <div class="macro-bar-meta">
+                    <span class="macro-name"><strong class="dot-fat"></strong> <span data-i18n="macroFat">Жиры</span></span>
+                    <span class="macro-values"><strong id="nutFatVal">54</strong> / <span id="nutFatGoal">70</span> г</span>
+                  </div>
+                  <div class="progress-bar-track">
+                    <div class="progress-bar-fill fill-fat" id="nutFatBar" style="width: 77%;"></div>
+                  </div>
+                </div>
+
+                <!-- Carbs -->
+                <div class="macro-bar-item">
+                  <div class="macro-bar-meta">
+                    <span class="macro-name"><strong class="dot-carbs"></strong> <span data-i18n="macroCarbs">Углеводы</span></span>
+                    <span class="macro-values"><strong id="nutCarbsVal">210</strong> / <span id="nutCarbsGoal">260</span> г</span>
+                  </div>
+                  <div class="progress-bar-track">
+                    <div class="progress-bar-fill fill-carbs" id="nutCarbsBar" style="width: 80%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Interactive Water Hydration Tracker Card -->
+            <div class="card water-tracker-card">
+              <div class="card-header">
+                <h4 class="card-title">
+                  <i class="fa-solid fa-droplet text-blue"></i>
+                  <span data-i18n="waterTrackerTitle">Трекер воды</span>
+                </h4>
+                <span class="badge badge-blue" id="waterPercentageBadge">80%</span>
+              </div>
+              <div class="water-body">
+                <div class="water-counter">
+                  <span class="water-amount"><strong id="waterCurrentVal">2000</strong> <small>/ 2500 мл</small></span>
+                  <div class="water-cups-row" id="waterCupsRow">
+                    <!-- Glasses generated by JS -->
+                  </div>
+                </div>
+                <div class="water-actions">
+                  <button class="btn btn-sm btn-outline" id="waterSubBtn" title="Минус 250 мл">- 250 мл</button>
+                  <button class="btn btn-sm btn-primary water-add-btn" id="waterAddBtn">
+                    <i class="fa-solid fa-plus"></i> 250 мл
+                  </button>
+                  <button class="btn btn-sm btn-secondary" id="waterResetBtn" title="Сбросить">
+                    <i class="fa-solid fa-rotate-right"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Meals by Category (Breakfast, Lunch, Dinner, Snack) -->
+          <div class="meals-categories-grid">
+            <!-- Breakfast Category -->
+            <div class="meal-category-block" data-meal-type="breakfast">
+              <div class="category-header">
+                <div class="category-title-wrap">
+                  <span class="cat-icon-badge cat-breakfast"><i class="fa-solid fa-mug-saucer"></i></span>
+                  <div>
+                    <h3 data-i18n="catBreakfast">Завтрак</h3>
+                    <span class="category-cal-sub" id="catCalBreakfast">0 ккал</span>
+                  </div>
+                </div>
+                <button class="btn-quick-add-cat" data-type="breakfast" title="Добавить к завтраку">
+                  <i class="fa-solid fa-plus"></i>
+                </button>
+              </div>
+              <div class="meals-list" id="mealsListBreakfast">
+                <!-- Meals injected via JS -->
+              </div>
+            </div>
+
+            <!-- Lunch Category -->
+            <div class="meal-category-block" data-meal-type="lunch">
+              <div class="category-header">
+                <div class="category-title-wrap">
+                  <span class="cat-icon-badge cat-lunch"><i class="fa-solid fa-bowl-food"></i></span>
+                  <div>
+                    <h3 data-i18n="catLunch">Обед</h3>
+                    <span class="category-cal-sub" id="catCalLunch">0 ккал</span>
+                  </div>
+                </div>
+                <button class="btn-quick-add-cat" data-type="lunch" title="Добавить к обеду">
+                  <i class="fa-solid fa-plus"></i>
+                </button>
+              </div>
+              <div class="meals-list" id="mealsListLunch">
+                <!-- Meals injected via JS -->
+              </div>
+            </div>
+
+            <!-- Dinner Category -->
+            <div class="meal-category-block" data-meal-type="dinner">
+              <div class="category-header">
+                <div class="category-title-wrap">
+                  <span class="cat-icon-badge cat-dinner"><i class="fa-solid fa-utensils"></i></span>
+                  <div>
+                    <h3 data-i18n="catDinner">Ужин</h3>
+                    <span class="category-cal-sub" id="catCalDinner">0 ккал</span>
+                  </div>
+                </div>
+                <button class="btn-quick-add-cat" data-type="dinner" title="Добавить к ужину">
+                  <i class="fa-solid fa-plus"></i>
+                </button>
+              </div>
+              <div class="meals-list" id="mealsListDinner">
+                <!-- Meals injected via JS -->
+              </div>
+            </div>
+
+            <!-- Snacks Category -->
+            <div class="meal-category-block" data-meal-type="snack">
+              <div class="category-header">
+                <div class="category-title-wrap">
+                  <span class="cat-icon-badge cat-snack"><i class="fa-solid fa-apple-whole"></i></span>
+                  <div>
+                    <h3 data-i18n="catSnacks">Перекусы</h3>
+                    <span class="category-cal-sub" id="catCalSnack">0 ккал</span>
+                  </div>
+                </div>
+                <button class="btn-quick-add-cat" data-type="snack" title="Добавить перекус">
+                  <i class="fa-solid fa-plus"></i>
+                </button>
+              </div>
+              <div class="meals-list" id="mealsListSnack">
+                <!-- Meals injected via JS -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- TAB 4: SYNC & APPLE HEALTH & CSV IMPORT/EXPORT           -->
+        <!-- ======================================================== -->
+        <section class="tab-pane" id="tab-sync">
+          <div class="sync-grid">
+            <!-- Apple Health Live Sync Hero Card -->
+            <div class="card sync-hero-card">
+              <div class="sync-hero-glow"></div>
+              <div class="sync-hero-content">
+                <div class="sync-apple-badge">
+                  <i class="fa-brands fa-apple"></i>
+                  <span>Apple HealthKit Live Sync</span>
+                </div>
+                <h2 data-i18n="appleSyncHeroTitle">Беспроводная синхронизация с Apple Watch и iPhone</h2>
+                <p data-i18n="appleSyncHeroDesc">
+                  Мгновенное подключение к базе данных HealthKit. Автоматический импорт тренировок с датчиков Apple Watch: точный пульс в реальном времени, активные калории, каденс, GPS-трек и набор высоты.
+                </p>
+
+                <div class="sync-features-list">
+                  <div class="sync-feat-item">
+                    <i class="fa-solid fa-circle-check text-green"></i>
+                    <span data-i18n="featHr">Непрерывный мониторинг ЧСС</span>
+                  </div>
+                  <div class="sync-feat-item">
+                    <i class="fa-solid fa-circle-check text-green"></i>
+                    <span data-i18n="featGps">GPS-дистанция и набор высоты</span>
+                  </div>
+                  <div class="sync-feat-item">
+                    <i class="fa-solid fa-circle-check text-green"></i>
+                    <span data-i18n="featRings">Закрытие колец активности</span>
+                  </div>
+                </div>
+
+                <div class="sync-hero-actions">
+                  <button class="btn btn-primary btn-lg pulse-shadow" id="triggerLiveSyncBtn">
+                    <i class="fa-brands fa-apple"></i>
+                    <span data-i18n="btnStartLiveSync">Запустить Live-синхронизацию</span>
+                  </button>
+                  <button class="btn btn-outline btn-lg" id="exportAppleHealthXmlBtn">
+                    <i class="fa-solid fa-file-arrow-down"></i>
+                    <span data-i18n="btnSampleHealthExport">Демо HealthKit экспорт</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Animated Watch Mockup -->
+              <div class="sync-watch-visual">
+                <div class="apple-watch-frame">
+                  <div class="watch-screen">
+                    <div class="watch-time" id="watchLiveTime">09:41</div>
+                    <div class="watch-ring-mini">
+                      <i class="fa-solid fa-heart-pulse heart-pulse-anim"></i>
+                      <span class="watch-hr-val" id="watchLiveHr">142</span>
+                      <small>BPM</small>
+                    </div>
+                    <div class="watch-metrics">
+                      <div><span>DIST</span><strong>8.42 KM</strong></div>
+                      <div><span>CAL</span><strong>540 KCAL</strong></div>
+                    </div>
+                    <div class="watch-status-pill">
+                      <span class="dot-online"></span>
+                      <span>CONNECTED</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- CSV Import Zone Card -->
+            <div class="card csv-import-card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">
+                    <i class="fa-solid fa-file-csv text-strava"></i>
+                    <span data-i18n="csvImportTitle">Импорт файлов CSV / Apple Health XML</span>
+                  </h3>
+                  <p class="card-subtitle" data-i18n="csvImportSubtitle">Перетащите файл или выберите на компьютере</p>
+                </div>
+                <button class="btn btn-sm btn-outline" id="downloadCsvTemplateBtn">
+                  <i class="fa-solid fa-download"></i>
+                  <span data-i18n="btnDownloadTemplate">Шаблон CSV</span>
+                </button>
+              </div>
+
+              <!-- Drag and Drop Dropzone -->
+              <div class="dropzone" id="csvDropzone">
+                <input type="file" id="csvFileInput" accept=".csv, .xml, text/csv, application/xml" class="dropzone-input">
+                <div class="dropzone-inner">
+                  <div class="dropzone-icon">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                  </div>
+                  <h4 data-i18n="dropzonePrompt">Перетащите сюда файл .csv или .xml</h4>
+                  <p data-i18n="dropzoneSub">Поддерживаются стандартные CSV Strava/Garmin и выгрузка HealthKit</p>
+                  <button type="button" class="btn btn-secondary btn-sm" id="browseFileBtn" data-i18n="btnBrowseFiles">
+                    Выбрать файл
+                  </button>
+                </div>
+              </div>
+
+              <!-- Recent Import Log / Status -->
+              <div class="import-log hidden" id="importLogBox">
+                <div class="import-log-header">
+                  <span class="log-title"><i class="fa-solid fa-circle-check text-green"></i> <span data-i18n="importSuccessTitle">Импорт успешно завершён</span></span>
+                  <span class="log-count" id="importSuccessCount">0 записей добавлено</span>
+                </div>
+                <p class="log-desc" id="importLogDetails">Все тренировки внесены в базу, статистика обновлена.</p>
+              </div>
+            </div>
+
+            <!-- Export Hub Card -->
+            <div class="card export-hub-card">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <i class="fa-solid fa-cloud-arrow-down text-blue"></i>
+                  <span data-i18n="exportHubTitle">Экспорт и Резервное копирование</span>
+                </h3>
+              </div>
+              <div class="export-options-grid">
+                <!-- Export Workouts CSV -->
+                <div class="export-tile">
+                  <div class="export-icon"><i class="fa-solid fa-person-running text-strava"></i></div>
+                  <div class="export-meta">
+                    <h4 data-i18n="exportWorkoutsTitle">Тренировки (CSV)</h4>
+                    <p data-i18n="exportWorkoutsDesc">Полный архив со всеми параметрами темпа, пульса и калорий</p>
+                  </div>
+                  <button class="btn btn-outline btn-sm" id="exportWorkoutsCsvBtn">
+                    <i class="fa-solid fa-download"></i>
+                    <span data-i18n="btnExport">Экспорт</span>
+                  </button>
+                </div>
+
+                <!-- Export Nutrition CSV -->
+                <div class="export-tile">
+                  <div class="export-icon"><i class="fa-solid fa-utensils text-green"></i></div>
+                  <div class="export-meta">
+                    <h4 data-i18n="exportNutritionTitle">Дневник питания (CSV)</h4>
+                    <p data-i18n="exportNutritionDesc">Все приёмы пищи, граммы БЖУ, калории и время приёма</p>
+                  </div>
+                  <button class="btn btn-outline btn-sm" id="exportNutritionCsvBtn">
+                    <i class="fa-solid fa-download"></i>
+                    <span data-i18n="btnExport">Экспорт</span>
+                  </button>
+                </div>
+
+                <!-- Full Backup JSON -->
+                <div class="export-tile">
+                  <div class="export-icon"><i class="fa-solid fa-database text-purple"></i></div>
+                  <div class="export-meta">
+                    <h4 data-i18n="exportBackupTitle">Полный бэкап (JSON)</h4>
+                    <p data-i18n="exportBackupDesc">Вся история, настройки, цели и переписка с ИИ-тренером</p>
+                  </div>
+                  <button class="btn btn-outline btn-sm" id="exportFullBackupBtn">
+                    <i class="fa-solid fa-download"></i>
+                    <span data-i18n="btnBackup">Бэкап</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- TAB 5: AI FITNESS COACH (PULSE AI COACH)                 -->
+        <!-- ======================================================== -->
+        <section class="tab-pane" id="tab-coach">
+          <div class="coach-layout">
+            <!-- Coach Left Panel: Real-time Athletic Context -->
+            <div class="coach-context-panel">
+              <div class="coach-avatar-card">
+                <div class="coach-avatar-ring">
+                  <i class="fa-solid fa-robot coach-robot-icon"></i>
+                  <span class="coach-pulse-ring"></span>
+                </div>
+                <div class="coach-avatar-text">
+                  <h3>StravaPulse Coach AI</h3>
+                  <span class="badge badge-online">
+                    <span class="dot-online"></span>
+                    <span data-i18n="coachOnlineStatus">Аналитик онлайн</span>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Real-time Live Metrics seen by AI -->
+              <div class="card coach-data-card">
+                <h4 class="card-title">
+                  <i class="fa-solid fa-brain text-purple"></i>
+                  <span data-i18n="coachContextTitle">Текущие данные атлета</span>
+                </h4>
+                <div class="coach-stats-list">
+                  <div class="c-stat-row">
+                    <span data-i18n="cStatWeeklyDist">Дистанция за 7 дней:</span>
+                    <strong id="aiStatDist">0 км</strong>
+                  </div>
+                  <div class="c-stat-row">
+                    <span data-i18n="cStatAvgHr">Средний пульс нагрузок:</span>
+                    <strong id="aiStatHr">0 bpm</strong>
+                  </div>
+                  <div class="c-stat-row">
+                    <span data-i18n="cStatCalBalance">Баланс ккал (вх/вых):</span>
+                    <strong id="aiStatCal">0 / 0</strong>
+                  </div>
+                  <div class="c-stat-row">
+                    <span data-i18n="cStatAvgProtein">Средний белок в день:</span>
+                    <strong id="aiStatProtein">0 г</strong>
+                  </div>
+                  <div class="c-stat-row">
+                    <span data-i18n="cStatRecovery">Индекс восстановления:</span>
+                    <strong class="text-green" id="aiStatRecovery">94% (Отлично)</strong>
+                  </div>
+                </div>
+              </div>
+
+              <!-- AI Engine Selector & Key Config -->
+              <div class="card coach-settings-card">
+                <h4 class="card-title">
+                  <i class="fa-solid fa-sliders text-cyan"></i>
+                  <span data-i18n="coachEngineTitle">Движок ИИ</span>
+                </h4>
+                <div class="engine-toggle-group">
+                  <label class="engine-radio-label">
+                    <input type="radio" name="aiEngineRadio" value="local" checked id="engineRadioLocal">
+                    <div class="radio-card">
+                      <strong>Локальный Pulse AI</strong>
+                      <small>Мгновенный анализ без API-ключа (офлайн)</small>
+                    </div>
+                  </label>
+                  <label class="engine-radio-label">
+                    <input type="radio" name="aiEngineRadio" value="gemini" id="engineRadioGemini">
+                    <div class="radio-card">
+                      <strong>Gemini 2.5 / 1.5 Flash API</strong>
+                      <small>Облачный LLM с вашим ключом Google AI</small>
+                    </div>
+                  </label>
+                </div>
+                <div class="api-key-input-wrap hidden" id="geminiApiKeyWrap">
+                  <label for="geminiApiKeyInput">Google Gemini API Key:</label>
+                  <input type="password" id="geminiApiKeyInput" placeholder="AIzaSy..." class="form-control">
+                  <small class="helper-text">Ключ сохраняется локально в браузере</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Coach Right Panel: Chat Interface -->
+            <div class="coach-chat-panel">
+              <!-- Quick Prompts Row -->
+              <div class="quick-prompts-bar">
+                <span class="quick-prompts-label" data-i18n="quickPromptsLabel">Быстрые запросы:</span>
+                <div class="prompts-scroll-container">
+                  <button class="prompt-chip" data-prompt="analyze-weekly">
+                    <i class="fa-solid fa-chart-line text-strava"></i>
+                    <span data-i18n="promptWeekly">Проанализируй тренировки за неделю</span>
+                  </button>
+                  <button class="prompt-chip" data-prompt="eval-nutrition">
+                    <i class="fa-solid fa-bowl-food text-green"></i>
+                    <span data-i18n="promptNutrition">Оцени баланс КБЖУ и питание</span>
+                  </button>
+                  <button class="prompt-chip" data-prompt="check-hr-zones">
+                    <i class="fa-solid fa-heart-pulse text-purple"></i>
+                    <span data-i18n="promptHr">Проверь пульс и риск перетренированности</span>
+                  </button>
+                  <button class="prompt-chip" data-prompt="tomorrow-plan">
+                    <i class="fa-solid fa-calendar-check text-blue"></i>
+                    <span data-i18n="promptTomorrow">План тренировок и питания на завтра</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Chat Messages Stream -->
+              <div class="chat-messages-container" id="coachChatContainer">
+                <!-- Welcome AI Message -->
+                <div class="chat-msg ai-msg">
+                  <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
+                  <div class="chat-bubble">
+                    <div class="chat-bubble-header">
+                      <strong>StravaPulse AI Coach</strong>
+                      <span class="chat-time">Сейчас</span>
+                    </div>
+                    <div class="chat-bubble-text" data-i18n="coachWelcomeMsg">
+                      Привет, атлет! Я твой персональный спортивный аналитик и тренер. Я изучил твои свежие тренировки, темп, зоны пульса и питание за последние 7 дней. Выбери быстрый запрос вверху или напиши любой вопрос о своей форме, питании или восстановлении!
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Typing Indicator (Hidden by default) -->
+              <div class="typing-indicator hidden" id="typingIndicator">
+                <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
+                <div class="typing-bubble">
+                  <span></span><span></span><span></span>
+                </div>
+              </div>
+
+              <!-- Chat Input Bar -->
+              <div class="chat-input-wrapper">
+                <form id="coachChatForm" class="chat-form">
+                  <input type="text" id="coachChatInput" placeholder="Спроси тренера о пульсе, питании или составлении плана..." data-i18n-placeholder="coachInputPlaceholder" autocomplete="off">
+                  <button type="submit" class="btn btn-primary btn-chat-send" id="coachSendBtn">
+                    <i class="fa-solid fa-paper-plane"></i>
+                  </button>
+                </form>
+                <div class="chat-footer-controls">
+                  <button class="btn-text-subtle" id="clearChatHistoryBtn">
+                    <i class="fa-solid fa-trash-can"></i>
+                    <span data-i18n="clearChat">Очистить историю</span>
+                  </button>
+                  <span class="chat-disclaimer" data-i18n="chatDisclaimer">Советы носят рекомендательный характер для спортивной формы</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 1: ADD / EDIT WORKOUT                              -->
+  <!-- ======================================================== -->
+  <div class="modal-overlay hidden" id="workoutModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="workoutModalTitle" data-i18n="modalAddWorkoutTitle">Новая тренировка</h3>
+        <button class="modal-close-btn" id="closeWorkoutModalBtn" aria-label="Close modal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <form id="workoutForm" class="modal-form">
+        <input type="hidden" id="workoutIdInput">
+
+        <div class="form-row">
+          <div class="form-group flex-2">
+            <label for="workoutTitleInput" data-i18n="fieldTitle">Название активности *</label>
+            <input type="text" id="workoutTitleInput" required placeholder="Утренний кросс в парке" class="form-control">
+          </div>
+          <div class="form-group flex-1">
+            <label for="workoutTypeInput" data-i18n="fieldType">Вид спорта *</label>
+            <select id="workoutTypeInput" required class="form-control">
+              <option value="Run">🏃 Бег (Run)</option>
+              <option value="Ride">🚴 Велосипед (Ride)</option>
+              <option value="Swim">🏊 Плавание (Swim)</option>
+              <option value="Strength">🏋️ Силовая (Strength)</option>
+              <option value="Walk">🚶 Ходьба (Walk)</option>
+              <option value="HIIT">⚡ HIIT / Интервалы</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="workoutDateInput" data-i18n="fieldDate">Дата и время *</label>
+            <input type="datetime-local" id="workoutDateInput" required class="form-control">
+          </div>
+          <div class="form-group flex-1">
+            <label for="workoutDurationInput" data-i18n="fieldDuration">Длительность (мин) *</label>
+            <input type="number" id="workoutDurationInput" min="1" max="1440" required placeholder="45" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="workoutDistanceInput" data-i18n="fieldDistance">Дистанция (км)</label>
+            <input type="number" id="workoutDistanceInput" step="0.01" min="0" placeholder="7.5" class="form-control">
+          </div>
+          <div class="form-group flex-1">
+            <label for="workoutCaloriesInput" data-i18n="fieldCalories">Калории (ккал) *</label>
+            <input type="number" id="workoutCaloriesInput" min="0" required placeholder="480" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="workoutHrInput" data-i18n="fieldHeartRate">Средний пульс (уд/мин)</label>
+            <input type="number" id="workoutHrInput" min="40" max="230" placeholder="148" class="form-control">
+          </div>
+          <div class="form-group flex-1">
+            <label for="workoutElevationInput" data-i18n="fieldElevation">Набор высоты (м)</label>
+            <input type="number" id="workoutElevationInput" min="0" placeholder="65" class="form-control">
+          </div>
+        </div>
+
+        <!-- Calculated Live Metric Preview -->
+        <div class="modal-metric-preview" id="workoutPacePreview">
+          <span class="preview-label" data-i18n="calculatedPace">Расчётный темп:</span>
+          <span class="preview-val" id="workoutPacePreviewVal">—</span>
+        </div>
+
+        <div class="form-group">
+          <label for="workoutNotesInput" data-i18n="fieldNotes">Заметки и ощущения</label>
+          <textarea id="workoutNotesInput" rows="3" placeholder="Лёгкие ноги, бодрый темп, отличная погода..." class="form-control"></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancelWorkoutBtn" data-i18n="btnCancel">Отмена</button>
+          <button type="submit" class="btn btn-primary" id="saveWorkoutBtn" data-i18n="btnSaveWorkout">Сохранить тренировку</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 2: ADD / EDIT MEAL                                 -->
+  <!-- ======================================================== -->
+  <div class="modal-overlay hidden" id="mealModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="mealModalTitle" data-i18n="modalAddMealTitle">Добавить приём пищи</h3>
+        <button class="modal-close-btn" id="closeMealModalBtn" aria-label="Close modal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <form id="mealForm" class="modal-form">
+        <input type="hidden" id="mealIdInput">
+
+        <div class="form-row">
+          <div class="form-group flex-2">
+            <label for="mealNameInput" data-i18n="fieldMealName">Название блюда / продукта *</label>
+            <input type="text" id="mealNameInput" required placeholder="Овсяная каша с ягодами и орехами" class="form-control">
+          </div>
+          <div class="form-group flex-1">
+            <label for="mealTypeSelect" data-i18n="fieldMealType">Приём пищи *</label>
+            <select id="mealTypeSelect" required class="form-control">
+              <option value="breakfast" data-i18n="catBreakfast">Завтрак</option>
+              <option value="lunch" data-i18n="catLunch">Обед</option>
+              <option value="dinner" data-i18n="catDinner">Ужин</option>
+              <option value="snack" data-i18n="catSnacks">Перекус</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="mealCaloriesInput" data-i18n="fieldCalories">Калории (ккал) *</label>
+            <input type="number" id="mealCaloriesInput" min="0" required placeholder="420" class="form-control">
+          </div>
+          <div class="form-group flex-1">
+            <label for="mealTimeInput" data-i18n="fieldTime">Время приёма *</label>
+            <input type="time" id="mealTimeInput" required class="form-control">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="mealProteinInput" data-i18n="fieldProtein">Белки (г)</label>
+            <input type="number" id="mealProteinInput" step="0.1" min="0" placeholder="18" class="form-control">
+          </div>
+          <div class="form-group flex-1">
+            <label for="mealFatInput" data-i18n="fieldFat">Жиры (г)</label>
+            <input type="number" id="mealFatInput" step="0.1" min="0" placeholder="12" class="form-control">
+          </div>
+          <div class="form-group flex-1">
+            <label for="mealCarbsInput" data-i18n="fieldCarbs">Углеводы (г)</label>
+            <input type="number" id="mealCarbsInput" step="0.1" min="0" placeholder="56" class="form-control">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancelMealBtn" data-i18n="btnCancel">Отмена</button>
+          <button type="submit" class="btn btn-primary" id="saveMealBtn" data-i18n="btnSaveMeal">Сохранить блюдо</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 3: APPLE WATCH LIVE SYNC SIMULATION                -->
+  <!-- ======================================================== -->
+  <div class="modal-overlay hidden" id="appleSyncModal">
+    <div class="modal-dialog modal-dialog-sync">
+      <div class="sync-animation-container">
+        <!-- Pulsing radar rings -->
+        <div class="radar-box">
+          <div class="radar-circle radar-1"></div>
+          <div class="radar-circle radar-2"></div>
+          <div class="radar-circle radar-3"></div>
+          <div class="radar-center">
+            <i class="fa-brands fa-apple apple-icon-pulsing"></i>
+          </div>
+        </div>
+
+        <h3 class="sync-dialog-title" id="syncStatusHeadline" data-i18n="syncConnecting">Поиск Apple Watch Ultra...</h3>
+        <p class="sync-dialog-subtitle" id="syncStatusSub" data-i18n="syncReadingHealth">Установление защищённого канала HealthKit</p>
+
+        <!-- Progress Steps Tracker -->
+        <div class="sync-steps-list">
+          <div class="sync-step-row active" id="step1">
+            <div class="step-indicator"><i class="fa-solid fa-spinner fa-spin"></i></div>
+            <span data-i18n="syncStep1">Подключение к Bluetooth & HealthKit daemon...</span>
+          </div>
+          <div class="sync-step-row" id="step2">
+            <div class="step-indicator"><i class="fa-solid fa-circle"></i></div>
+            <span data-i18n="syncStep2">Чтение записей HKWorkoutActivityType...</span>
+          </div>
+          <div class="sync-step-row" id="step3">
+            <div class="step-indicator"><i class="fa-solid fa-circle"></i></div>
+            <span data-i18n="syncStep3">Синхронизация пульсовых зон и GPS-дистанции...</span>
+          </div>
+          <div class="sync-step-row" id="step4">
+            <div class="step-indicator"><i class="fa-solid fa-circle"></i></div>
+            <span data-i18n="syncStep4">Обновление дашборда и аналитики...</span>
+          </div>
+        </div>
+
+        <div class="sync-modal-footer">
+          <button class="btn btn-outline" id="closeSyncModalBtn" data-i18n="btnClose">Отмена</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 4: ATHLETE PROFILE & APP SETTINGS                  -->
+  <!-- ======================================================== -->
+  <div class="modal-overlay hidden" id="settingsModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" data-i18n="settingsTitle">Настройки атлета и цели</h3>
+        <button class="modal-close-btn" id="closeSettingsModalBtn" aria-label="Close modal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <form id="settingsForm" class="modal-form">
+        <div class="form-row">
+          <div class="form-group flex-2">
+            <label for="setAthleteName" data-i18n="setAthleteName">Имя атлета</label>
+            <input type="text" id="setAthleteName" class="form-control" value="Алексей Романов">
+          </div>
+          <div class="form-group flex-1">
+            <label for="setAthleteWeight" data-i18n="setAthleteWeight">Вес (кг)</label>
+            <input type="number" id="setAthleteWeight" class="form-control" value="72" min="30" max="250">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="setDailyCalGoal" data-i18n="setDailyCalGoal">Цель калорий в день (ккал)</label>
+            <input type="number" id="setDailyCalGoal" class="form-control" value="2400" min="800" max="10000">
+          </div>
+          <div class="form-group flex-1">
+            <label for="setDailyWaterGoal" data-i18n="setDailyWaterGoal">Норма воды (мл)</label>
+            <input type="number" id="setDailyWaterGoal" class="form-control" value="2500" step="100" min="500" max="8000">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="setGoalProtein" data-i18n="setGoalProtein">Белки цель (г)</label>
+            <input type="number" id="setGoalProtein" class="form-control" value="150">
+          </div>
+          <div class="form-group flex-1">
+            <label for="setGoalFat" data-i18n="setGoalFat">Жиры цель (г)</label>
+            <input type="number" id="setGoalFat" class="form-control" value="70">
+          </div>
+          <div class="form-group flex-1">
+            <label for="setGoalCarbs" data-i18n="setGoalCarbs">Углеводы цель (г)</label>
+            <input type="number" id="setGoalCarbs" class="form-control" value="260">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="setFitnessGoal" data-i18n="setFitnessGoal">Основная спортивная цель</label>
+          <select id="setFitnessGoal" class="form-control">
+            <option value="endurance" data-i18n="goalEndurance">Развитие выносливости и темпа (Бег / Вело)</option>
+            <option value="fatloss" data-i18n="goalFatLoss">Снижение веса и рельеф</option>
+            <option value="muscle" data-i18n="goalMuscle">Набор мышечной массы и сила</option>
+            <option value="maintenance" data-i18n="goalMaintenance">Поддержание тонуса и здоровья</option>
+          </select>
+        </div>
+
+        <div class="settings-danger-zone">
+          <h4 data-i18n="dangerZoneTitle">Сброс данных</h4>
+          <p data-i18n="dangerZoneDesc">Восстановить исходные демо-данные тренировок и питания за 7 дней.</p>
+          <button type="button" class="btn btn-outline-danger btn-sm" id="resetDemoDataBtn">
+            <i class="fa-solid fa-rotate-left"></i>
+            <span data-i18n="btnRestoreDemo">Сбросить на демо-данные</span>
+          </button>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancelSettingsBtn" data-i18n="btnCancel">Отмена</button>
+          <button type="submit" class="btn btn-primary" data-i18n="btnSaveSettings">Сохранить настройки</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notifications Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav class="mobile-bottom-nav">
+    <button class="mobile-nav-item active" data-tab="dashboard">
+      <i class="fa-solid fa-chart-line"></i>
+      <span data-i18n="mobDashboard">Дашборд</span>
+    </button>
+    <button class="mobile-nav-item" data-tab="workouts">
+      <i class="fa-solid fa-person-running"></i>
+      <span data-i18n="mobWorkouts">Тренировки</span>
+    </button>
+    <button class="mobile-nav-item" data-tab="nutrition">
+      <i class="fa-solid fa-utensils"></i>
+      <span data-i18n="mobNutrition">Питание</span>
+    </button>
+    <button class="mobile-nav-item" data-tab="sync">
+      <i class="fa-brands fa-apple"></i>
+      <span data-i18n="mobSync">Синхрон</span>
+    </button>
+    <button class="mobile-nav-item" data-tab="coach">
+      <i class="fa-solid fa-robot"></i>
+      <span data-i18n="mobCoach">ИИ</span>
+    </button>
+  </nav>
+
+  <!-- External libraries: Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
