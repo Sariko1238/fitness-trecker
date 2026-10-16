@@ -3611,3 +3611,138 @@ textarea.form-control {
   border-color: var(--strava-orange);
 }
 
+/* --------------------------------------------------------------------------
+   SWEETALERT2 STRAVA DARK THEME CUSTOMIZATION
+   -------------------------------------------------------------------------- */
+.swal2-popup.swal-strava-theme {
+  background: #16171D !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: var(--radius-lg) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7), 0 0 25px rgba(252, 76, 2, 0.15) !important;
+  font-family: var(--font-body) !important;
+  padding: 24px !important;
+}
+
+.swal2-title.swal-strava-title {
+  font-family: var(--font-display) !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.3px !important;
+  color: #FFFFFF !important;
+}
+
+.swal2-html-container.swal-strava-html {
+  color: var(--text-secondary) !important;
+  font-size: 0.95rem !important;
+  line-height: 1.5 !important;
+}
+
+.swal2-confirm.swal-strava-confirm {
+  background: linear-gradient(135deg, #FC4C02, #FF7A00) !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  border-radius: var(--radius-sm) !important;
+  font-weight: 700 !important;
+  font-family: var(--font-display) !important;
+  padding: 10px 22px !important;
+  box-shadow: 0 4px 15px rgba(252, 76, 2, 0.35) !important;
+  transition: all var(--transition-fast) !important;
+}
+
+.swal2-confirm.swal-strava-confirm:hover {
+  background: linear-gradient(135deg, #E03E00, #FC4C02) !important;
+  transform: translateY(-1px) !important;
+}
+
+.swal2-cancel.swal-strava-cancel {
+  background: var(--bg-surface) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: var(--radius-sm) !important;
+  font-weight: 600 !important;
+  font-family: var(--font-display) !important;
+  padding: 10px 20px !important;
+}
+
+.swal2-cancel.swal-strava-cancel:hover {
+  background: var(--bg-card-hover) !important;
+  color: #FFFFFF !important;
+}
+
+.swal2-icon.swal2-warning {
+  border-color: #FF9F0A !important;
+  color: #FF9F0A !important;
+}
+
+.swal2-icon.swal2-success {
+  border-color: #30D158 !important;
+  color: #30D158 !important;
+}
+
+.swal2-icon.swal2-error {
+  border-color: #FF453A !important;
+  color: #FF453A !important;
+}
+
+/* --------------------------------------------------------------------------
+   DASHBOARD ACTIONS & WORKOUT SHARE BUTTONS
+   -------------------------------------------------------------------------- */
+.dashboard-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-outline-strava {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  border-radius: var(--radius-sm);
+  background: rgba(252, 76, 2, 0.08);
+  border: 1px solid rgba(252, 76, 2, 0.4);
+  color: var(--strava-orange);
+  font-weight: 700;
+  font-size: 0.82rem;
+  font-family: var(--font-display);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-outline-strava:hover {
+  background: var(--strava-orange);
+  border-color: var(--strava-orange);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(252, 76, 2, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-share-workout {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  background: rgba(252, 76, 2, 0.1);
+  border: 1px solid rgba(252, 76, 2, 0.3);
+  color: var(--strava-orange);
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-share-workout:hover {
+  background: var(--strava-orange);
+  color: #FFFFFF;
+  border-color: var(--strava-orange);
+  box-shadow: 0 2px 10px rgba(252, 76, 2, 0.3);
+}
+
+.strava-card-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+

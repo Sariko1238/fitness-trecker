@@ -915,6 +915,11 @@ class StravaPulseApp {
       });
     });
 
+    // Dashboard PDF Export Report
+    document.getElementById("downloadDashboardPdfBtn")?.addEventListener("click", () => {
+      this.exportDashboardPdf();
+    });
+
     // Quick open World Map from dashboard banner
     document.getElementById("openWorldMapFromDashBtn")?.addEventListener("click", () => {
       this.switchTab("map");
@@ -1000,8 +1005,16 @@ class StravaPulseApp {
     document.getElementById("closeSettingsModalBtn")?.addEventListener("click", () => this.closeSettingsModal());
     document.getElementById("cancelSettingsBtn")?.addEventListener("click", () => this.closeSettingsModal());
     this.settingsForm?.addEventListener("submit", (e) => this.handleSettingsSubmit(e));
-    document.getElementById("resetDemoDataBtn")?.addEventListener("click", () => {
-      if (confirm("Вы уверены, что хотите восстановить исходные демонстрационные тренировки, GPS-маршруты и питание?")) {
+    document.getElementById("resetDemoDataBtn")?.addEventListener("click", async () => {
+      const confirmed = await this.confirmDialog({
+        title: "Сбросить на демо-данные?",
+        text: "Вы уверены, что хотите восстановить исходные демонстрационные тренировки, GPS-маршруты и дневник питания?",
+        confirmButtonText: "Да, восстановить",
+        cancelButtonText: "Отмена",
+        icon: "warning"
+      });
+
+      if (confirmed) {
         this.state.restoreDemoData();
         this.closeSettingsModal();
         this.renderUserProfile();
@@ -2384,9 +2397,15 @@ class StravaPulseApp {
                   <span>${w.kudos || 0} Kudos</span>
                 </button>
               </div>
-              <span class="activity-device-tag">
-                <i class="fa-brands fa-apple"></i> ${w.device || "Apple Watch / Strava"}
-              </span>
+              <div class="strava-card-footer-actions">
+                <button type="button" class="btn-share-workout share-workout-btn" data-id="${w.id}" title="Скачать карточку тренировки в стиле Strava">
+                  <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                  <span>Поделиться</span>
+                </button>
+                <span class="activity-device-tag">
+                  <i class="fa-brands fa-apple"></i> ${w.device || "Apple Watch / Strava"}
+                </span>
+              </div>
             </div>
           </div>
         `;
@@ -2444,9 +2463,17 @@ class StravaPulseApp {
     });
 
     container.querySelectorAll(".delete-workout-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", async () => {
         const id = btn.getAttribute("data-id");
-        if (confirm("Удалить эту тренировку из ленты?")) {
+        const confirmed = await this.confirmDialog({
+          title: "Удалить тренировку?",
+          text: "Вы уверены, что хотите удалить эту тренировку из ленты активности?",
+          confirmButtonText: "Удалить",
+          cancelButtonText: "Отмена",
+          icon: "warning"
+        });
+
+        if (confirmed) {
           this.state.workouts = this.state.workouts.filter((x) => x.id !== id);
           this.state.saveWorkouts();
           this.renderWorkoutsFeed();
@@ -2455,6 +2482,13 @@ class StravaPulseApp {
           if (this.worldMap) this.renderWorldMapRoutes();
           this.showToast(this.t("workoutDeletedToast"), "error");
         }
+      });
+    });
+
+    container.querySelectorAll(".share-workout-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        this.shareWorkoutCard(id);
       });
     });
 
@@ -2555,6 +2589,10 @@ class StravaPulseApp {
     const notes = document.getElementById("workoutNotesInput").value.trim();
     const coords = this.currentModalRouteCoords ? [...this.currentModalRouteCoords] : [];
 
+    // Check if new workout or updated
+    const isNew = !id;
+    const oldPrs = isNew ? this.calculatePersonalRecords() : null;
+
     if (id) {
       const index = this.state.workouts.findIndex((w) => w.id === id);
       if (index !== -1) {
@@ -2600,7 +2638,27 @@ class StravaPulseApp {
     this.renderUserProfile();
     this.renderAIContext();
     if (this.worldMap) this.renderWorldMapRoutes();
-    this.showToast(this.t("workoutSavedToast"), "success");
+
+    if (isNew) {
+      const newPrs = this.calculatePersonalRecords();
+      const createdWorkout = this.state.workouts[0];
+      const isPR = createdWorkout && (
+        newPrs.maxDistanceId === createdWorkout.id ||
+        newPrs.fastestPaceId === createdWorkout.id ||
+        newPrs.maxElevationId === createdWorkout.id ||
+        newPrs.maxCaloriesId === createdWorkout.id
+      );
+
+      if (isPR) {
+        this.fireConfettiCelebration("pr");
+        this.showToast("🏆 Личный рекорд (PR) побит! Потрясающий результат!", "success");
+      } else {
+        this.fireConfettiCelebration("workout");
+        this.showToast(this.t("workoutSavedToast"), "success");
+      }
+    } else {
+      this.showToast(this.t("workoutSavedToast"), "success");
+    }
   }
 
   // ------------------------------------------------------------------------
@@ -2733,9 +2791,17 @@ class StravaPulseApp {
     });
 
     document.querySelectorAll(".delete-meal-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", async () => {
         const id = btn.getAttribute("data-id");
-        if (confirm("Удалить это блюдо из дневника?")) {
+        const confirmed = await this.confirmDialog({
+          title: "Удалить блюдо?",
+          text: "Вы уверены, что хотите удалить это блюдо из дневника питания?",
+          confirmButtonText: "Удалить",
+          cancelButtonText: "Отмена",
+          icon: "warning"
+        });
+
+        if (confirmed) {
           this.state.meals = this.state.meals.filter((x) => x.id !== id);
           this.state.saveMeals();
           this.renderNutritionTab();
@@ -2865,13 +2931,23 @@ class StravaPulseApp {
       });
     }
 
+    const dayMeals = this.state.meals.filter((m) => m.date === date);
+    const dayTotalCal = dayMeals.reduce((acc, m) => acc + (Number(m.cal) || 0), 0);
+    const goalCal = this.state.settings.dailyCalGoal || 2400;
+
     this.state.saveMeals();
     this.closeMealModal();
     this.renderNutritionTab();
     this.renderDashboard();
     this.renderUserProfile();
     this.renderAIContext();
-    this.showToast(this.t("mealSavedToast"), "success");
+
+    if (dayTotalCal >= goalCal) {
+      this.fireConfettiCelebration("goal");
+      this.showToast(`🎯 Дневная норма калорий (${dayTotalCal} / ${goalCal} ккал) выполнена!`, "success");
+    } else {
+      this.showToast(this.t("mealSavedToast"), "success");
+    }
   }
 
   // ------------------------------------------------------------------------
@@ -3164,85 +3240,183 @@ class StravaPulseApp {
   }
 
   parseCsvContent(csvText, filename) {
-    const lines = csvText.split(/\r\n|\n/).filter((l) => l.trim().length > 0);
-    if (lines.length < 2) {
+    if (!csvText || !csvText.trim()) {
       this.showToast("Файл CSV пуст или содержит только заголовки", "error");
       return;
     }
 
-    const headers = lines[0].split(",").map((h) => h.trim().toLowerCase().replace(/"/g, ""));
+    let parsedRows = [];
+    if (typeof Papa !== "undefined") {
+      const parsed = Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: true,
+        dynamicTyping: false
+      });
+      parsedRows = parsed.data || [];
+    }
 
     let importedCount = 0;
     const newWorkouts = [];
     const newMeals = [];
 
-    const isNutrition = headers.includes("food") || headers.includes("meal") || headers.includes("protein");
+    if (parsedRows.length > 0 && typeof parsedRows[0] === "object") {
+      // Header-based parsing via PapaParse
+      const sample = parsedRows[0];
+      const keys = Object.keys(sample).map((k) => k.trim().toLowerCase());
+      const isNutrition = keys.includes("food") || keys.includes("meal") || keys.includes("protein");
 
-    for (let i = 1; i < lines.length; i++) {
-      const row = this.parseCsvRow(lines[i]);
-      if (row.length === 0) continue;
-
-      if (isNutrition) {
-        const meal = {
-          id: `imp-m-${Date.now()}-${i}`,
-          date: row[headers.indexOf("date")] || this.state.getTodayIsoDate(),
-          name: row[headers.indexOf("name")] || row[headers.indexOf("meal")] || "Импортированное блюдо",
-          type: (row[headers.indexOf("type")] || "lunch").toLowerCase(),
-          time: row[headers.indexOf("time")] || "13:00",
-          cal: Number(row[headers.indexOf("calories")] || row[headers.indexOf("cal")]) || 300,
-          protein: Number(row[headers.indexOf("protein")]) || 0,
-          fat: Number(row[headers.indexOf("fat")]) || 0,
-          carbs: Number(row[headers.indexOf("carbs")]) || 0
-        };
-        newMeals.push(meal);
-        importedCount++;
-      } else {
-        const getVal = (candidates, fallback = "") => {
-          for (const c of candidates) {
-            const idx = headers.indexOf(c);
-            if (idx !== -1 && row[idx] !== undefined) return row[idx];
+      parsedRows.forEach((row, i) => {
+        const getField = (candidates, fallback = "") => {
+          for (const rawKey of Object.keys(row)) {
+            const normalized = rawKey.trim().toLowerCase();
+            if (candidates.includes(normalized) && row[rawKey] !== undefined && row[rawKey] !== null) {
+              return String(row[rawKey]).trim();
+            }
           }
           return fallback;
         };
 
-        const title = getVal(["title", "activity_name", "name"], "Импортированная тренировка");
-        const type = getVal(["type", "sport", "activity_type"], "Run");
-        let dateVal = getVal(["date", "start_time", "start_date"], new Date().toISOString());
-        if (!dateVal.includes("T")) dateVal = new Date(dateVal).toISOString();
+        if (isNutrition) {
+          const mealName = getField(["name", "meal", "food"], "Импортированное блюдо");
+          const dateVal = getField(["date"], this.state.getTodayIsoDate());
+          const typeVal = getField(["type"], "lunch").toLowerCase();
+          const timeVal = getField(["time"], "13:00");
+          const calVal = Number(getField(["calories", "cal"])) || 300;
+          const pVal = Number(getField(["protein"])) || 0;
+          const fVal = Number(getField(["fat"])) || 0;
+          const cVal = Number(getField(["carbs"])) || 0;
 
-        const duration = Number(getVal(["duration", "elapsed_time_min", "time_min"])) || 30;
-        const distance = Number(getVal(["distance", "distance_km", "km"])) || 0;
-        const calories = Number(getVal(["calories", "energy_burned", "kcal"])) || 250;
-        const heartRate = Number(getVal(["heart_rate", "avg_hr", "hr"])) || null;
-        const elevation = Number(getVal(["elevation", "elevation_gain", "gain_m"])) || 0;
-        const notes = getVal(["notes", "description"], `Импортировано из ${filename}`);
+          newMeals.push({
+            id: `imp-m-${Date.now()}-${i}`,
+            date: dateVal,
+            name: mealName,
+            type: typeVal,
+            time: timeVal,
+            cal: calVal,
+            protein: pVal,
+            fat: fVal,
+            carbs: cVal
+          });
+          importedCount++;
+        } else {
+          const title = getField(["title", "activity_name", "name"], "Импортированная тренировка");
+          const type = getField(["type", "sport", "activity_type"], "Run");
+          let dateVal = getField(["date", "start_time", "start_date"], new Date().toISOString());
+          if (!dateVal.includes("T")) {
+            const parsedD = new Date(dateVal);
+            dateVal = isNaN(parsedD.getTime()) ? new Date().toISOString() : parsedD.toISOString();
+          }
 
-        // Parse coordinates column if present
-        let coords = [];
-        const rawCoords = getVal(["coordinates", "coords", "gps"]);
-        if (rawCoords) {
-          try {
-            coords = JSON.parse(rawCoords);
-          } catch (e) { }
+          const duration = Number(getField(["duration", "elapsed_time_min", "time_min"])) || 30;
+          const distance = Number(getField(["distance", "distance_km", "km"])) || 0;
+          const calories = Number(getField(["calories", "energy_burned", "kcal"])) || 250;
+          const heartRate = Number(getField(["heart_rate", "avg_hr", "hr"])) || null;
+          const elevation = Number(getField(["elevation", "elevation_gain", "gain_m"])) || 0;
+          const notes = getField(["notes", "description"], `Импортировано из ${filename}`);
+
+          let coords = [];
+          const rawCoords = getField(["coordinates", "coords", "gps"]);
+          if (rawCoords) {
+            try {
+              coords = JSON.parse(rawCoords);
+            } catch (e) { }
+          }
+
+          newWorkouts.push({
+            id: `imp-w-${Date.now()}-${i}`,
+            title,
+            type,
+            date: dateVal,
+            duration,
+            distance,
+            calories,
+            heartRate,
+            elevation,
+            notes,
+            coordinates: coords,
+            kudos: 0,
+            isKudoed: false,
+            device: "CSV / PapaParse"
+          });
+          importedCount++;
         }
+      });
+    } else {
+      // Fallback if PapaParse is not loaded
+      const lines = csvText.split(/\r\n|\n/).filter((l) => l.trim().length > 0);
+      if (lines.length < 2) {
+        this.showToast("Файл CSV пуст или содержит только заголовки", "error");
+        return;
+      }
 
-        newWorkouts.push({
-          id: `imp-w-${Date.now()}-${i}`,
-          title,
-          type,
-          date: dateVal,
-          duration,
-          distance,
-          calories,
-          heartRate,
-          elevation,
-          notes,
-          coordinates: coords,
-          kudos: 0,
-          isKudoed: false,
-          device: "CSV Import"
-        });
-        importedCount++;
+      const headers = lines[0].split(",").map((h) => h.trim().toLowerCase().replace(/"/g, ""));
+      const isNutrition = headers.includes("food") || headers.includes("meal") || headers.includes("protein");
+
+      for (let i = 1; i < lines.length; i++) {
+        const row = this.parseCsvRow(lines[i]);
+        if (row.length === 0) continue;
+
+        if (isNutrition) {
+          const meal = {
+            id: `imp-m-${Date.now()}-${i}`,
+            date: row[headers.indexOf("date")] || this.state.getTodayIsoDate(),
+            name: row[headers.indexOf("name")] || row[headers.indexOf("meal")] || "Импортированное блюдо",
+            type: (row[headers.indexOf("type")] || "lunch").toLowerCase(),
+            time: row[headers.indexOf("time")] || "13:00",
+            cal: Number(row[headers.indexOf("calories")] || row[headers.indexOf("cal")]) || 300,
+            protein: Number(row[headers.indexOf("protein")]) || 0,
+            fat: Number(row[headers.indexOf("fat")]) || 0,
+            carbs: Number(row[headers.indexOf("carbs")]) || 0
+          };
+          newMeals.push(meal);
+          importedCount++;
+        } else {
+          const getVal = (candidates, fallback = "") => {
+            for (const c of candidates) {
+              const idx = headers.indexOf(c);
+              if (idx !== -1 && row[idx] !== undefined) return row[idx];
+            }
+            return fallback;
+          };
+
+          const title = getVal(["title", "activity_name", "name"], "Импортированная тренировка");
+          const type = getVal(["type", "sport", "activity_type"], "Run");
+          let dateVal = getVal(["date", "start_time", "start_date"], new Date().toISOString());
+          if (!dateVal.includes("T")) dateVal = new Date(dateVal).toISOString();
+
+          const duration = Number(getVal(["duration", "elapsed_time_min", "time_min"])) || 30;
+          const distance = Number(getVal(["distance", "distance_km", "km"])) || 0;
+          const calories = Number(getVal(["calories", "energy_burned", "kcal"])) || 250;
+          const heartRate = Number(getVal(["heart_rate", "avg_hr", "hr"])) || null;
+          const elevation = Number(getVal(["elevation", "elevation_gain", "gain_m"])) || 0;
+          const notes = getVal(["notes", "description"], `Импортировано из ${filename}`);
+
+          let coords = [];
+          const rawCoords = getVal(["coordinates", "coords", "gps"]);
+          if (rawCoords) {
+            try {
+              coords = JSON.parse(rawCoords);
+            } catch (e) { }
+          }
+
+          newWorkouts.push({
+            id: `imp-w-${Date.now()}-${i}`,
+            title,
+            type,
+            date: dateVal,
+            duration,
+            distance,
+            calories,
+            heartRate,
+            elevation,
+            notes,
+            coordinates: coords,
+            kudos: 0,
+            isKudoed: false,
+            device: "CSV Import"
+          });
+          importedCount++;
+        }
       }
     }
 
@@ -3368,38 +3542,118 @@ class StravaPulseApp {
   }
 
   downloadCsvTemplate() {
-    const csvContent =
-      "title,type,date,duration,distance,calories,heart_rate,elevation,notes,coordinates\n" +
-      'Утренний темповый бег,Run,2026-10-15T08:30:00,45,8.2,540,152,30,"Отличный темп","[[55.715,37.553],[55.725,37.565],[55.715,37.553]]"\n' +
-      'Велозаезд по шоссе,Ride,2026-10-14T17:00:00,60,25.4,620,138,180,"Аэробная база","[[55.709,37.542],[55.735,37.498],[55.709,37.542]]"\n' +
-      'Силовая тренировка,Strength,2026-10-13T19:00:00,50,0,420,140,0,"Приседания и жим","[]"\n';
+    const data = [
+      {
+        title: "Утренний темповый бег",
+        type: "Run",
+        date: "2026-10-15T08:30:00",
+        duration: 45,
+        distance: 8.2,
+        calories: 540,
+        heart_rate: 152,
+        elevation: 30,
+        notes: "Отличный темп",
+        coordinates: "[[55.715,37.553],[55.725,37.565],[55.715,37.553]]"
+      },
+      {
+        title: "Велозаезд по шоссе",
+        type: "Ride",
+        date: "2026-10-14T17:00:00",
+        duration: 60,
+        distance: 25.4,
+        calories: 620,
+        heart_rate: 138,
+        elevation: 180,
+        notes: "Аэробная база",
+        coordinates: "[[55.709,37.542],[55.735,37.498],[55.709,37.542]]"
+      },
+      {
+        title: "Силовая тренировка",
+        type: "Strength",
+        date: "2026-10-13T19:00:00",
+        duration: 50,
+        distance: 0,
+        calories: 420,
+        heart_rate: 140,
+        elevation: 0,
+        notes: "Приседания и жим",
+        coordinates: "[]"
+      }
+    ];
+
+    let csvContent = "";
+    if (typeof Papa !== "undefined") {
+      csvContent = Papa.unparse(data);
+    } else {
+      csvContent =
+        "title,type,date,duration,distance,calories,heart_rate,elevation,notes,coordinates\n" +
+        'Утренний темповый бег,Run,2026-10-15T08:30:00,45,8.2,540,152,30,"Отличный темп","[[55.715,37.553],[55.725,37.565],[55.715,37.553]]"\n' +
+        'Велозаезд по шоссе,Ride,2026-10-14T17:00:00,60,25.4,620,138,180,"Аэробная база","[[55.709,37.542],[55.735,37.498],[55.709,37.542]]"\n' +
+        'Силовая тренировка,Strength,2026-10-13T19:00:00,50,0,420,140,0,"Приседания и жим","[]"\n';
+    }
 
     this.downloadFile("stravapulse_template.csv", csvContent, "text/csv;charset=utf-8;");
     this.showToast("Шаблон CSV с координатами скачан!", "info");
   }
 
   exportWorkoutsCsv() {
-    const headers = "id,title,type,date,duration,distance,calories,heart_rate,elevation,notes,coordinates\n";
-    const rows = this.state.workouts
-      .map((w) => {
-        const coordsStr = w.coordinates ? JSON.stringify(w.coordinates).replace(/"/g, '""') : "[]";
-        return `"${w.id}","${(w.title || "").replace(/"/g, '""')}","${w.type}","${w.date}",${w.duration},${w.distance || 0},${w.calories || 0},${w.heartRate || ""},${w.elevation || 0},"${(w.notes || "").replace(/"/g, '""')}","${coordsStr}"`;
-      })
-      .join("\n");
+    let csvContent = "";
+    if (typeof Papa !== "undefined") {
+      const data = this.state.workouts.map((w) => ({
+        id: w.id,
+        title: w.title || "",
+        type: w.type,
+        date: w.date,
+        duration: w.duration,
+        distance: w.distance || 0,
+        calories: w.calories || 0,
+        heart_rate: w.heartRate || "",
+        elevation: w.elevation || 0,
+        notes: w.notes || "",
+        coordinates: w.coordinates ? JSON.stringify(w.coordinates) : "[]"
+      }));
+      csvContent = Papa.unparse(data);
+    } else {
+      const headers = "id,title,type,date,duration,distance,calories,heart_rate,elevation,notes,coordinates\n";
+      const rows = this.state.workouts
+        .map((w) => {
+          const coordsStr = w.coordinates ? JSON.stringify(w.coordinates).replace(/"/g, '""') : "[]";
+          return `"${w.id}","${(w.title || "").replace(/"/g, '""')}","${w.type}","${w.date}",${w.duration},${w.distance || 0},${w.calories || 0},${w.heartRate || ""},${w.elevation || 0},"${(w.notes || "").replace(/"/g, '""')}","${coordsStr}"`;
+        })
+        .join("\n");
+      csvContent = headers + rows;
+    }
 
-    this.downloadFile("stravapulse_workouts_export.csv", headers + rows, "text/csv;charset=utf-8;");
+    this.downloadFile("stravapulse_workouts_export.csv", csvContent, "text/csv;charset=utf-8;");
     this.showToast("Тренировки экспортированы в CSV с GPS-треками!", "success");
   }
 
   exportNutritionCsv() {
-    const headers = "id,date,name,type,time,calories,protein,fat,carbs\n";
-    const rows = this.state.meals
-      .map((m) => {
-        return `"${m.id}","${m.date}","${(m.name || "").replace(/"/g, '""')}","${m.type}","${m.time || ""}",${m.cal},${m.protein || 0},${m.fat || 0},${m.carbs || 0}`;
-      })
-      .join("\n");
+    let csvContent = "";
+    if (typeof Papa !== "undefined") {
+      const data = this.state.meals.map((m) => ({
+        id: m.id,
+        date: m.date,
+        name: m.name || "",
+        type: m.type,
+        time: m.time || "",
+        calories: m.cal,
+        protein: m.protein || 0,
+        fat: m.fat || 0,
+        carbs: m.carbs || 0
+      }));
+      csvContent = Papa.unparse(data);
+    } else {
+      const headers = "id,date,name,type,time,calories,protein,fat,carbs\n";
+      const rows = this.state.meals
+        .map((m) => {
+          return `"${m.id}","${m.date}","${(m.name || "").replace(/"/g, '""')}","${m.type}","${m.time || ""}",${m.cal},${m.protein || 0},${m.fat || 0},${m.carbs || 0}`;
+        })
+        .join("\n");
+      csvContent = headers + rows;
+    }
 
-    this.downloadFile("stravapulse_nutrition_export.csv", headers + rows, "text/csv;charset=utf-8;");
+    this.downloadFile("stravapulse_nutrition_export.csv", csvContent, "text/csv;charset=utf-8;");
     this.showToast("Дневник питания экспортирован в CSV!", "success");
   }
 
@@ -3816,6 +4070,33 @@ class StravaPulseApp {
   // TOAST NOTIFICATIONS & UTILS
   // ------------------------------------------------------------------------
   showToast(message, type = "info") {
+    // If SweetAlert2 is loaded, show a toast using Swal.mixin in Strava Dark Theme
+    if (typeof Swal !== "undefined") {
+      const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3500,
+        timerProgressBar: true,
+        background: "#16171D",
+        color: "#FFFFFF",
+        customClass: {
+          popup: "swal-strava-theme"
+        },
+        didOpen: (toast) => {
+          toast.addEventListener("mouseenter", Swal.stopTimer);
+          toast.addEventListener("mouseleave", Swal.resumeTimer);
+        }
+      });
+
+      const swalIcon = type === "error" ? "error" : type === "success" ? "success" : "info";
+      Toast.fire({
+        icon: swalIcon,
+        title: message
+      });
+      return;
+    }
+
     const container = document.getElementById("toastContainer");
     if (!container) return;
 
@@ -3841,6 +4122,188 @@ class StravaPulseApp {
       toast.style.transition = "all 0.3s ease";
       setTimeout(() => toast.remove(), 300);
     }, 3500);
+  }
+
+  // ------------------------------------------------------------------------
+  // SWEETALERT2 MODAL DIALOGS (STRAVA DARK THEME)
+  // ------------------------------------------------------------------------
+  async confirmDialog({ title, text, confirmButtonText = "Подтвердить", cancelButtonText = "Отмена", icon = "warning" }) {
+    if (typeof Swal === "undefined") {
+      return confirm(text || title);
+    }
+
+    const result = await Swal.fire({
+      title,
+      text,
+      icon,
+      showCancelButton: true,
+      confirmButtonText,
+      cancelButtonText,
+      reverseButtons: true,
+      background: "#16171D",
+      color: "#FFFFFF",
+      customClass: {
+        popup: "swal-strava-theme",
+        title: "swal-strava-title",
+        htmlContainer: "swal-strava-html",
+        confirmButton: "swal-strava-confirm",
+        cancelButton: "swal-strava-cancel"
+      },
+      buttonsStyling: false
+    });
+
+    return result.isConfirmed;
+  }
+
+  alertDialog({ title, text, icon = "info" }) {
+    if (typeof Swal === "undefined") {
+      alert(text || title);
+      return;
+    }
+
+    return Swal.fire({
+      title,
+      text,
+      icon,
+      confirmButtonText: "Понятно",
+      background: "#16171D",
+      color: "#FFFFFF",
+      customClass: {
+        popup: "swal-strava-theme",
+        title: "swal-strava-title",
+        htmlContainer: "swal-strava-html",
+        confirmButton: "swal-strava-confirm"
+      },
+      buttonsStyling: false
+    });
+  }
+
+  // ------------------------------------------------------------------------
+  // CANVAS-CONFETTI CELEBRATIONS
+  // ------------------------------------------------------------------------
+  fireConfettiCelebration(type = "workout") {
+    if (typeof confetti === "undefined") return;
+
+    if (type === "pr") {
+      // Epic gold & Strava orange burst from both sides
+      const count = 200;
+      const defaults = {
+        origin: { y: 0.7 },
+        colors: ["#FC4C02", "#FFD60A", "#FF7A00", "#FF2D55", "#FFFFFF"]
+      };
+
+      const fire = (particleRatio, opts) => {
+        confetti({
+          ...defaults,
+          ...opts,
+          particleCount: Math.floor(count * particleRatio)
+        });
+      };
+
+      fire(0.25, { spread: 26, startVelocity: 55 });
+      fire(0.2, { spread: 60 });
+      fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+      fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+      fire(0.1, { spread: 120, startVelocity: 45 });
+    } else if (type === "goal") {
+      // Apple rings green & cyan celebration
+      confetti({
+        particleCount: 100,
+        spread: 80,
+        origin: { y: 0.6 },
+        colors: ["#30D158", "#00E5FF", "#FC4C02", "#FFFFFF"]
+      });
+    } else {
+      // Standard new workout celebration
+      confetti({
+        particleCount: 60,
+        spread: 60,
+        origin: { y: 0.65 },
+        colors: ["#FC4C02", "#FF7A00", "#FFFFFF"]
+      });
+    }
+  }
+
+  // ------------------------------------------------------------------------
+  // HTML2CANVAS: STRAVA SHARE WORKOUT CARD
+  // ------------------------------------------------------------------------
+  async shareWorkoutCard(workoutId) {
+    const cardEl = document.querySelector(`.strava-card[data-workout-id="${workoutId}"]`);
+    if (!cardEl) return;
+
+    if (typeof html2canvas === "undefined") {
+      this.showToast("Библиотека html2canvas ещё загружается...", "error");
+      return;
+    }
+
+    try {
+      this.showToast("Генерируем карточку Strava Share...", "info");
+
+      // Temporarily hide action buttons on the card during snapshot
+      const actionsMenu = cardEl.querySelector(".card-actions-menu");
+      const shareBtn = cardEl.querySelector(".share-workout-btn");
+      if (actionsMenu) actionsMenu.style.visibility = "hidden";
+      if (shareBtn) shareBtn.style.visibility = "hidden";
+
+      const canvas = await html2canvas(cardEl, {
+        scale: 2,
+        backgroundColor: "#16171D",
+        useCORS: true,
+        logging: false
+      });
+
+      if (actionsMenu) actionsMenu.style.visibility = "visible";
+      if (shareBtn) shareBtn.style.visibility = "visible";
+
+      // Download snapshot as PNG
+      const link = document.createElement("a");
+      link.download = `stravapulse_activity_${workoutId}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+
+      this.fireConfettiCelebration("workout");
+      this.showToast("Карточка активности успешно скачана! 📸", "success");
+    } catch (err) {
+      console.error("html2canvas export error:", err);
+      this.showToast("Не удалось сгенерировать изображение карточки", "error");
+    }
+  }
+
+  // ------------------------------------------------------------------------
+  // HTML2PDF: DASHBOARD PDF REPORT EXPORT
+  // ------------------------------------------------------------------------
+  async exportDashboardPdf() {
+    const dashboardSection = document.getElementById("tab-dashboard");
+    if (!dashboardSection) return;
+
+    if (typeof html2pdf === "undefined") {
+      this.showToast("Библиотека html2pdf ещё загружается...", "error");
+      return;
+    }
+
+    try {
+      this.showToast("Формируем PDF-отчёт дашборда...", "info");
+
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: `stravapulse_dashboard_report_${new Date().toISOString().slice(0, 10)}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: "#0B0C0E",
+          logging: false
+        },
+        jsPDF: { unit: "mm", format: "a4", orientation: "landscape" }
+      };
+
+      await html2pdf().set(opt).from(dashboardSection).save();
+      this.fireConfettiCelebration("goal");
+      this.showToast("PDF-отчёт дашборда успешно скачан! 📄", "success");
+    } catch (err) {
+      console.error("html2pdf export error:", err);
+      this.showToast("Ошибка при экспорте PDF-отчёта", "error");
+    }
   }
 
   escapeHtml(str) {
