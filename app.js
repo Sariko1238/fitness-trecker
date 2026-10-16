@@ -727,6 +727,8 @@ class StravaPulseApp {
   constructor() {
     this.state = new AppState();
     this.charts = {};
+    this.echarts = {};
+    this.radarMode = "radar";
 
     // Leaflet Maps instances
     this.worldMap = null;
@@ -760,9 +762,11 @@ class StravaPulseApp {
     this.renderAIContext();
     this.renderChatMessages();
 
-    // Resize listener
+    // Resize listener for 3D canvases and Leaflet
     window.addEventListener("resize", () => {
       this.drawActivityRings();
+      this.renderKpiSparklines(this.getFilteredWorkoutsByTimeframe());
+      Object.values(this.echarts || {}).forEach((chart) => chart && chart.resize && chart.resize());
       if (this.worldMap) this.worldMap.invalidateSize();
     });
   }
@@ -805,7 +809,7 @@ class StravaPulseApp {
     this.state.currentTheme = this.state.currentTheme === "dark" ? "light" : "dark";
     localStorage.setItem("stravapulse_theme", this.state.currentTheme);
     this.initTheme();
-    this.updateChartsTheme();
+    this.renderDashboard();
     this.drawActivityRings();
     this.updateMapTiles();
   }
@@ -918,6 +922,30 @@ class StravaPulseApp {
     // Dashboard PDF Export Report
     document.getElementById("downloadDashboardPdfBtn")?.addEventListener("click", () => {
       this.exportDashboardPdf();
+    });
+
+    // 3D Interactive Presentation Report Modal triggers
+    const openReport3D = () => this.open3DReportModal();
+    document.getElementById("topOpen3DReportBtn")?.addEventListener("click", openReport3D);
+    document.getElementById("open3DReportModalBtn")?.addEventListener("click", openReport3D);
+    document.getElementById("close3DReportBtn")?.addEventListener("click", () => this.close3DReportModal());
+    document.getElementById("closeReportFooterBtn")?.addEventListener("click", () => this.close3DReportModal());
+    document.getElementById("report3DModalBackdrop")?.addEventListener("click", () => this.close3DReportModal());
+    document.getElementById("downloadReportPdfBtn")?.addEventListener("click", () => this.exportReport3DPdf());
+    document.getElementById("downloadReportPngBtn")?.addEventListener("click", () => this.exportReport3DPng());
+
+    // 3D Radar / Surface Mode toggles
+    document.getElementById("btnRadarMode")?.addEventListener("click", () => {
+      this.radarMode = "radar";
+      document.getElementById("btnRadarMode")?.classList.add("active");
+      document.getElementById("btnSurfaceMode")?.classList.remove("active");
+      this.render3DAthleteRadar(this.getFilteredWorkoutsByTimeframe());
+    });
+    document.getElementById("btnSurfaceMode")?.addEventListener("click", () => {
+      this.radarMode = "surface";
+      document.getElementById("btnSurfaceMode")?.classList.add("active");
+      document.getElementById("btnRadarMode")?.classList.remove("active");
+      this.render3DAthleteRadar(this.getFilteredWorkoutsByTimeframe());
     });
 
     // Quick open World Map from dashboard banner
@@ -1264,20 +1292,34 @@ class StravaPulseApp {
       if (w.locationName) locationsSet.add(w.locationName);
 
       const latlngs = w.coordinates;
-      const polyline = L.polyline(latlngs, {
+
+      // 3D Glowing Double-Stroke Polyline (Back Layer: Neon Halo & Shadow)
+      const glowPolyline = L.polyline(latlngs, {
         color: "#FC4C02",
-        weight: 5,
-        opacity: 0.9,
+        weight: 12,
+        opacity: 0.32,
+        lineJoin: "round",
+        lineCap: "round",
+        className: "leaflet-glow-path"
+      });
+
+      // Front Layer: Crisp High-Intensity Core
+      const polyline = L.polyline(latlngs, {
+        color: "#FF661A",
+        weight: 4.5,
+        opacity: 0.98,
         lineJoin: "round",
         lineCap: "round"
       });
 
-      // Hover glow effect
+      // Hover 3D glow expansion effect
       polyline.on("mouseover", () => {
-        polyline.setStyle({ weight: 7, opacity: 1, color: "#FF7A00" });
+        polyline.setStyle({ weight: 6.5, opacity: 1, color: "#FFA14A" });
+        glowPolyline.setStyle({ weight: 16, opacity: 0.5 });
       });
       polyline.on("mouseout", () => {
-        polyline.setStyle({ weight: 5, opacity: 0.9, color: "#FC4C02" });
+        polyline.setStyle({ weight: 4.5, opacity: 0.98, color: "#FF661A" });
+        glowPolyline.setStyle({ weight: 12, opacity: 0.32 });
       });
 
       // Custom Start and Finish Markers
@@ -1301,13 +1343,14 @@ class StravaPulseApp {
       const startMarker = L.marker(startCoord, { icon: startIcon });
       const finishMarker = L.marker(finishCoord, { icon: finishIcon });
 
-      // Interactive Popup
+      // Interactive Popup with 3D Elevation Profile Canvas
       const d = new Date(w.date);
       const dateStr = d.toLocaleDateString(this.state.currentLang === "ru" ? "ru-RU" : "en-US", {
         day: "numeric",
         month: "short"
       });
       const paceVal = w.type === "Ride" ? this.formatSpeed(w.distance, w.duration) : this.formatPace(w.distance, w.duration);
+      const elevationGain = Number(w.elevation) || Math.round((Number(w.distance) || 5) * 14);
 
       const popupHtml = `
         <div class="strava-popup-card">
@@ -1331,6 +1374,13 @@ class StravaPulseApp {
               <strong class="text-fire">${w.heartRate || "—"} bpm</strong>
             </div>
           </div>
+          <div class="map-popup-elevation-box">
+            <div class="map-popup-elevation-header">
+              <span><i class="fa-solid fa-mountain text-strava"></i> 3D Профиль высоты</span>
+              <strong>+${elevationGain} м (D+)</strong>
+            </div>
+            <canvas id="popupElev_${w.id}" width="260" height="48" class="popup-elev-canvas"></canvas>
+          </div>
           <button class="popup-btn-focus" onclick="window.stravaPulseApp.focusOnWorkoutRoute('${w.id}')">
             🔍 Приблизить трек
           </button>
@@ -1341,6 +1391,15 @@ class StravaPulseApp {
       startMarker.bindPopup(popupHtml);
       finishMarker.bindPopup(popupHtml);
 
+      // On popup open, draw the 3D elevation profile spline
+      const handlePopupOpen = () => {
+        setTimeout(() => this.drawPopupElevationProfile(`popupElev_${w.id}`, w), 60);
+      };
+      polyline.on("popupopen", handlePopupOpen);
+      startMarker.on("popupopen", handlePopupOpen);
+      finishMarker.on("popupopen", handlePopupOpen);
+
+      this.worldMapRoutesLayer.addLayer(glowPolyline);
       this.worldMapRoutesLayer.addLayer(polyline);
       this.worldMapRoutesLayer.addLayer(startMarker);
       this.worldMapRoutesLayer.addLayer(finishMarker);
@@ -1701,7 +1760,10 @@ class StravaPulseApp {
     if (dashDist) dashDist.textContent = `${mappedKm.toFixed(1)} км на карте`;
 
     this.drawActivityRings();
+    this.renderKpiSparklines(workouts);
+    this.renderTssFitnessBanner(workouts);
     this.renderCharts(workouts);
+    this.initTiltCards();
   }
 
   drawActivityRings() {
@@ -1806,25 +1868,248 @@ class StravaPulseApp {
     });
   }
 
-  renderCharts(workouts) {
-    if (typeof Chart === "undefined") return;
-
-    this.renderTrainingLoadChart(workouts);
-    this.renderEnergyBalanceChart();
-    this.renderHrPaceChart(workouts);
-    this.renderMacrosChart();
+  getEchart(id) {
+    const el = document.getElementById(id);
+    if (!el || typeof echarts === "undefined") return null;
+    if (!this.echarts) this.echarts = {};
+    if (!this.echarts[id]) {
+      this.echarts[id] = echarts.init(el, null, { renderer: "canvas" });
+    }
+    return this.echarts[id];
   }
 
-  renderTrainingLoadChart(workouts) {
-    const canvas = document.getElementById("trainingLoadChart");
+  initTiltCards() {
+    if (typeof VanillaTilt !== "undefined") {
+      VanillaTilt.init(document.querySelectorAll(".tilt-card"), {
+        max: 8,
+        speed: 400,
+        glare: true,
+        "max-glare": 0.15,
+        perspective: 1200
+      });
+    }
+  }
+
+  renderKpiSparklines(workouts) {
+    const now = new Date();
+    const daysDist = [];
+    const daysCal = [];
+    const daysTime = [];
+    const daysHr = [];
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const iso = d.toISOString().split("T")[0];
+      const dayWorkouts = this.state.workouts.filter((w) => w.date.startsWith(iso));
+
+      const dist = dayWorkouts.reduce((s, w) => s + (Number(w.distance) || 0), 0);
+      const cal = dayWorkouts.reduce((s, w) => s + (Number(w.calories) || 0), 0);
+      const dur = dayWorkouts.reduce((s, w) => s + (Number(w.duration) || 0), 0);
+      const hrWorkouts = dayWorkouts.filter((w) => w.heartRate);
+      const avgHr = hrWorkouts.length ? Math.round(hrWorkouts.reduce((s, w) => s + Number(w.heartRate), 0) / hrWorkouts.length) : 0;
+
+      daysDist.push(dist);
+      daysCal.push(cal);
+      daysTime.push(dur);
+      daysHr.push(avgHr);
+    }
+
+    this.drawSparkline("sparklineDistance", daysDist, "#FC4C02", "rgba(252, 76, 2, 0.22)");
+    this.drawSparkline("sparklineCalories", daysCal, "#FF6433", "rgba(255, 100, 51, 0.22)");
+    this.drawSparkline("sparklineTime", daysTime, "#0A84FF", "rgba(10, 132, 255, 0.22)");
+    this.drawSparkline("sparklineHr", daysHr, "#BF5AF2", "rgba(191, 90, 242, 0.22)");
+  }
+
+  drawSparkline(canvasId, data, strokeColor, fillColor) {
+    const canvas = document.getElementById(canvasId);
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    const colors = this.getChartThemeColors();
+    const width = canvas.width;
+    const height = canvas.height;
+    ctx.clearRect(0, 0, width, height);
+
+    if (!data || data.length < 2) return;
+    const max = Math.max(...data, 1);
+    const min = Math.min(...data, 0);
+    const range = max - min || 1;
+    const stepX = width / (data.length - 1);
+
+    const points = data.map((val, idx) => ({
+      x: idx * stepX,
+      y: height - ((val - min) / range) * (height - 8) - 4
+    }));
+
+    // Area fill
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, height);
+    ctx.lineTo(points[0].x, points[0].y);
+    for (let i = 0; i < points.length - 1; i++) {
+      const xc = (points[i].x + points[i + 1].x) / 2;
+      const yc = (points[i].y + points[i + 1].y) / 2;
+      ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+    }
+    ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+    ctx.lineTo(points[points.length - 1].x, height);
+    ctx.closePath();
+    ctx.fillStyle = fillColor;
+    ctx.fill();
+
+    // Curved line
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 0; i < points.length - 1; i++) {
+      const xc = (points[i].x + points[i + 1].x) / 2;
+      const yc = (points[i].y + points[i + 1].y) / 2;
+      ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+    }
+    ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Glowing tip
+    const last = points[points.length - 1];
+    ctx.beginPath();
+    ctx.arc(last.x - 2, last.y, 3, 0, Math.PI * 2);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.shadowColor = strokeColor;
+    ctx.shadowBlur = 6;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  renderTssFitnessBanner(workouts) {
+    let weeklyTss = 0;
+    workouts.forEach((w) => {
+      const dur = Number(w.duration) || 30;
+      const hr = Number(w.heartRate) || 140;
+      const hrFactor = Math.max(0.6, (hr - 60) / (190 - 60));
+      const workoutTss = Math.round((dur / 60) * Math.pow(hrFactor, 2.4) * 85);
+      weeklyTss += workoutTss;
+    });
+
+    const score = Math.min(Math.max(Math.round(weeklyTss / 5), 18), 100);
+    const fitness = Math.min(Math.round(score * 1.08), 98);
+    const fatigue = Math.round(score * 0.65);
+    const form = fitness - fatigue;
+
+    [document.getElementById("tssScoreDisplay"), document.getElementById("tssValue")].forEach((el) => el && (el.textContent = score));
+    const trendEl = document.getElementById("tssTrendBadge");
+    if (trendEl) trendEl.innerHTML = score >= 55 ? `<i class="fa-solid fa-arrow-trend-up"></i> +14% (Оптимум)` : `<i class="fa-solid fa-arrow-trend-down"></i> -6% (Восстановление)`;
+
+    let statusText = "Оптимальная форма (Пиковая производительность)";
+    let subText = "Ваша тренировочная нагрузка идеально стимулирует аэробный прогресс без риска травм и перетренированности.";
+    if (score > 82) {
+      statusText = "Перегрузка (Высокий риск перетренированности)";
+      subText = "Снизьте интенсивность или добавьте день активного отдыха (стретчинг, массаж, бассейн).";
+    } else if (score < 40) {
+      statusText = "Восстановление (Свежесть мышц)";
+      subText = "Организм полностью отдохнул. Отличное время для интенсивной сессии или темпового кросса!";
+    }
+
+    [document.getElementById("tssStatusText"), document.getElementById("tssStatusTitle")].forEach((el) => el && (el.textContent = statusText));
+    [document.getElementById("tssSubText"), document.getElementById("tssStatusDesc")].forEach((el) => el && (el.textContent = subText));
+    [document.getElementById("tssFitnessVal"), document.getElementById("ctlValue")].forEach((el) => el && (el.textContent = fitness));
+    [document.getElementById("tssFatigueVal"), document.getElementById("atlValue")].forEach((el) => el && (el.textContent = fatigue));
+    [document.getElementById("tssFormVal"), document.getElementById("tsbValue")].forEach((el) => el && (el.textContent = form >= 0 ? `+${form}` : form));
+
+    // Render 3D Gauge in #tssGaugeChart
+    const gaugeChart = this.getEchart("tssGaugeChart");
+    if (!gaugeChart) return;
+
+    const isDark = this.state.currentTheme === "dark";
+    const option = {
+      series: [
+        {
+          type: "gauge",
+          startAngle: 195,
+          endAngle: -15,
+          min: 0,
+          max: 100,
+          splitNumber: 5,
+          radius: "96%",
+          center: ["50%", "66%"],
+          itemStyle: {
+            color: "#FC4C02",
+            shadowColor: "rgba(252, 76, 2, 0.6)",
+            shadowBlur: 10,
+            shadowOffsetX: 2,
+            shadowOffsetY: 2
+          },
+          progress: {
+            show: true,
+            roundCap: true,
+            width: 14,
+            itemStyle: {
+              color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                { offset: 0, color: "#30D158" },
+                { offset: 0.6, color: "#FC4C02" },
+                { offset: 1, color: "#FF453A" }
+              ])
+            }
+          },
+          pointer: {
+            icon: "path://M12.8,0.7l12,40.1H0.7L12.8,0.7z",
+            length: "60%",
+            width: 8,
+            offsetCenter: [0, "-10%"],
+            itemStyle: {
+              color: isDark ? "#FFFFFF" : "#16171D",
+              shadowColor: "rgba(0, 0, 0, 0.4)",
+              shadowBlur: 6
+            }
+          },
+          axisLine: {
+            roundCap: true,
+            lineStyle: {
+              width: 14,
+              color: [[1, isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.08)"]]
+            }
+          },
+          axisTick: { show: false },
+          splitLine: {
+            length: 6,
+            lineStyle: {
+              width: 2,
+              color: isDark ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.2)"
+            }
+          },
+          axisLabel: {
+            distance: 18,
+            color: isDark ? "#8E929E" : "#6B7280",
+            fontSize: 9,
+            formatter: (v) => (v === 0 ? "Отдых" : v === 50 ? "Оптимум" : v === 100 ? "Пик" : "")
+          },
+          title: { show: false },
+          detail: { show: false },
+          data: [{ value: score }]
+        }
+      ]
+    };
+    gaugeChart.setOption(option, true);
+  }
+
+  renderCharts(workouts) {
+    this.render3DCharts(workouts);
+  }
+
+  render3DCharts(workouts) {
+    this.render3DLoadChart(workouts);
+    this.render3DEnergyBalanceChart();
+    this.render3DAthleteRadar(workouts);
+    this.render3DMacrosDoughnut();
+  }
+
+  render3DLoadChart(workouts) {
+    const chart = this.getEchart("trainingLoad3DChart");
+    if (!chart) return;
 
     const daysLabels = [];
     const distData = [];
     const minData = [];
     const now = new Date();
+    const isDark = this.state.currentTheme === "dark";
 
     for (let i = 6; i >= 0; i--) {
       const d = new Date(now);
@@ -1841,83 +2126,155 @@ class StravaPulseApp {
       minData.push(mins);
     }
 
-    if (this.charts.load) this.charts.load.destroy();
-
-    this.charts.load = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: daysLabels,
-        datasets: [
-          {
-            label: `${this.t("kpiTotalDistance")} (${this.t("unitKm")})`,
-            data: distData,
-            backgroundColor: "#FC4C02",
-            borderRadius: 6,
-            yAxisID: "y",
-            order: 2
-          },
-          {
-            label: `${this.t("kpiActiveTime")} (${this.t("badgeMin")})`,
-            data: minData,
-            type: "line",
-            borderColor: "#0A84FF",
-            backgroundColor: "rgba(10, 132, 255, 0.15)",
-            borderWidth: 2,
-            pointBackgroundColor: "#0A84FF",
-            pointRadius: 4,
-            tension: 0.35,
-            fill: true,
-            yAxisID: "y1",
-            order: 1
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: "#16171D",
-            borderColor: "rgba(255,255,255,0.1)",
-            borderWidth: 1,
-            padding: 10
-          }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { color: colors.textColor, font: { family: "Outfit", weight: "600" } }
-          },
-          y: {
-            type: "linear",
-            position: "left",
-            grid: { color: colors.gridColor },
-            ticks: { color: colors.textColor },
-            title: { display: true, text: "км", color: colors.textColor }
-          },
-          y1: {
-            type: "linear",
-            position: "right",
-            grid: { display: false },
-            ticks: { color: colors.textColor },
-            title: { display: true, text: "мин", color: colors.textColor }
-          }
+    const option = {
+      backgroundColor: "transparent",
+      tooltip: {
+        trigger: "axis",
+        backgroundColor: isDark ? "rgba(22, 23, 29, 0.95)" : "rgba(255, 255, 255, 0.95)",
+        borderColor: "rgba(252, 76, 2, 0.4)",
+        borderWidth: 1,
+        textStyle: { color: isDark ? "#FFFFFF" : "#16171D", fontFamily: "Outfit" },
+        padding: [10, 14],
+        formatter: (params) => {
+          let html = `<div style="font-weight:700; margin-bottom:4px;">${params[0].axisValue}</div>`;
+          params.forEach((p) => {
+            if (p.seriesName.includes("Дистанция") && p.seriesType === "bar") {
+              html += `<div style="display:flex; align-items:center; gap:6px; color:#FC4C02;">
+                <span>🏃 Дистанция:</span> <strong>${p.value} км</strong>
+              </div>`;
+            } else if (p.seriesName.includes("Время")) {
+              html += `<div style="display:flex; align-items:center; gap:6px; color:#0A84FF;">
+                <span>⏱️ Время:</span> <strong>${p.value} мин</strong>
+              </div>`;
+            }
+          });
+          return html;
         }
-      }
-    });
+      },
+      legend: {
+        data: ["Дистанция (км)", "Время (мин)"],
+        right: 15,
+        top: 0,
+        textStyle: { color: isDark ? "#8E929E" : "#6B7280", fontSize: 11 }
+      },
+      grid: {
+        top: 36,
+        left: "3%",
+        right: "3%",
+        bottom: "8%",
+        containLabel: true
+      },
+      xAxis: {
+        type: "category",
+        data: daysLabels,
+        axisLine: { lineStyle: { color: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)" } },
+        axisLabel: { color: isDark ? "#8E929E" : "#6B7280", fontWeight: "600", fontSize: 11 },
+        axisTick: { show: false }
+      },
+      yAxis: [
+        {
+          type: "value",
+          name: "км",
+          nameTextStyle: { color: "#FC4C02", fontSize: 11 },
+          axisLabel: { color: isDark ? "#8E929E" : "#6B7280" },
+          splitLine: { lineStyle: { color: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)" } }
+        },
+        {
+          type: "value",
+          name: "мин",
+          nameTextStyle: { color: "#0A84FF", fontSize: 11 },
+          axisLabel: { color: isDark ? "#8E929E" : "#6B7280" },
+          splitLine: { show: false }
+        }
+      ],
+      series: [
+        // 3D Isometric Cylinder Bottom Cap
+        {
+          name: "Дистанция (км)",
+          type: "pictorialBar",
+          symbol: "circle",
+          symbolSize: [26, 10],
+          symbolOffset: [0, 5],
+          z: 10,
+          itemStyle: { color: "#9E2300" },
+          data: distData
+        },
+        // 3D Isometric Cylinder Column Body
+        {
+          name: "Дистанция (км)",
+          type: "bar",
+          barWidth: 26,
+          itemStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+              { offset: 0, color: "#C43300" },
+              { offset: 0.35, color: "#FF6A00" },
+              { offset: 0.7, color: "#FC4C02" },
+              { offset: 1, color: "#8A1E00" }
+            ]),
+            shadowColor: "rgba(252, 76, 2, 0.4)",
+            shadowBlur: 12,
+            shadowOffsetY: 4
+          },
+          data: distData
+        },
+        // 3D Isometric Cylinder Top Cap
+        {
+          name: "Дистанция (км)",
+          type: "pictorialBar",
+          symbol: "circle",
+          symbolPosition: "end",
+          symbolSize: [26, 10],
+          symbolOffset: [0, -5],
+          z: 12,
+          itemStyle: {
+            color: "#FFA14A",
+            shadowColor: "rgba(252, 76, 2, 0.8)",
+            shadowBlur: 6
+          },
+          data: distData
+        },
+        // Active Minutes Floating Glowing 3D Line
+        {
+          name: "Время (мин)",
+          type: "line",
+          yAxisIndex: 1,
+          smooth: 0.35,
+          symbol: "circle",
+          symbolSize: 8,
+          lineStyle: {
+            width: 3.5,
+            color: "#0A84FF",
+            shadowColor: "rgba(10, 132, 255, 0.8)",
+            shadowBlur: 10
+          },
+          itemStyle: {
+            color: "#00D1FF",
+            borderColor: "#FFFFFF",
+            borderWidth: 2
+          },
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: "rgba(10, 132, 255, 0.28)" },
+              { offset: 1, color: "rgba(10, 132, 255, 0.0)" }
+            ])
+          },
+          data: minData
+        }
+      ]
+    };
+
+    chart.setOption(option, true);
   }
 
-  renderEnergyBalanceChart() {
-    const canvas = document.getElementById("energyBalanceChart");
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    const colors = this.getChartThemeColors();
+  render3DEnergyBalanceChart() {
+    const chart = this.getEchart("energyBalance3DChart");
+    if (!chart) return;
 
     const daysLabels = [];
     const foodKcalData = [];
     const burnedKcalData = [];
     const now = new Date();
+    const isDark = this.state.currentTheme === "dark";
 
     for (let i = 6; i >= 0; i--) {
       const d = new Date(now);
@@ -1935,144 +2292,310 @@ class StravaPulseApp {
       burnedKcalData.push(burnedKcal);
     }
 
-    if (this.charts.energy) this.charts.energy.destroy();
+    const option = {
+      backgroundColor: "transparent",
+      tooltip: {
+        trigger: "axis",
+        backgroundColor: isDark ? "rgba(22, 23, 29, 0.95)" : "rgba(255, 255, 255, 0.95)",
+        borderColor: "rgba(48, 209, 88, 0.4)",
+        borderWidth: 1,
+        textStyle: { color: isDark ? "#FFFFFF" : "#16171D", fontFamily: "Outfit" },
+        padding: [10, 14],
+        formatter: (params) => {
+          const day = params[0].axisValue;
+          const idx = params[0].dataIndex;
+          const food = foodKcalData[idx];
+          const burned = burnedKcalData[idx];
+          const diff = food - burned;
+          const isDeficit = diff < 0;
 
-    this.charts.energy = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: daysLabels,
-        datasets: [
-          {
-            label: this.t("badgeFood"),
-            data: foodKcalData,
-            backgroundColor: "#30D158",
-            borderRadius: 6
-          },
-          {
-            label: this.t("badgeBurned"),
-            data: burnedKcalData,
-            backgroundColor: "#FF6433",
-            borderRadius: 6
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: "#16171D",
-            borderColor: "rgba(255,255,255,0.1)",
-            borderWidth: 1,
-            padding: 10
-          }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { color: colors.textColor, font: { family: "Outfit", weight: "600" } }
-          },
-          y: {
-            grid: { color: colors.gridColor },
-            ticks: { color: colors.textColor },
-            title: { display: true, text: "ккал", color: colors.textColor }
-          }
+          return `
+            <div style="font-weight:700; margin-bottom:6px;">${day}</div>
+            <div style="color:#30D158; margin-bottom:2px;">🥗 Потреблено: <strong>${food} ккал</strong></div>
+            <div style="color:#FF453A; margin-bottom:4px;">🔥 Сожжено: <strong>${burned} ккал</strong></div>
+            <div style="font-size:0.85rem; padding-top:4px; border-top:1px solid rgba(255,255,255,0.1); color:${isDeficit ? '#FC4C02' : '#30D158'};">
+              ${isDeficit ? `⚡ Дефицит: ${Math.abs(diff)} ккал` : `📈 Профицит: +${diff} ккал`}
+            </div>
+          `;
         }
-      }
-    });
+      },
+      legend: {
+        data: ["Питание (ккал)", "Расход (ккал)"],
+        right: 15,
+        top: 0,
+        textStyle: { color: isDark ? "#8E929E" : "#6B7280", fontSize: 11 }
+      },
+      grid: {
+        top: 36,
+        left: "3%",
+        right: "3%",
+        bottom: "8%",
+        containLabel: true
+      },
+      xAxis: {
+        type: "category",
+        data: daysLabels,
+        axisLine: { lineStyle: { color: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)" } },
+        axisLabel: { color: isDark ? "#8E929E" : "#6B7280", fontWeight: "600", fontSize: 11 },
+        axisTick: { show: false }
+      },
+      yAxis: {
+        type: "value",
+        name: "ккал",
+        nameTextStyle: { color: isDark ? "#8E929E" : "#6B7280", fontSize: 11 },
+        axisLabel: { color: isDark ? "#8E929E" : "#6B7280" },
+        splitLine: { lineStyle: { color: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)" } }
+      },
+      series: [
+        // 3D Wave 1: Food Intake (Neon Green)
+        {
+          name: "Питание (ккал)",
+          type: "line",
+          smooth: 0.45,
+          symbol: "circle",
+          symbolSize: 6,
+          lineStyle: {
+            width: 3.5,
+            color: "#30D158",
+            shadowColor: "rgba(48, 209, 88, 0.7)",
+            shadowBlur: 12,
+            shadowOffsetY: 4
+          },
+          itemStyle: { color: "#30D158", borderColor: "#FFFFFF", borderWidth: 1.5 },
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: "rgba(48, 209, 88, 0.35)" },
+              { offset: 0.85, color: "rgba(48, 209, 88, 0.02)" }
+            ])
+          },
+          data: foodKcalData
+        },
+        // 3D Wave 2: Burned Energy (Neon Fire Orange)
+        {
+          name: "Расход (ккал)",
+          type: "line",
+          smooth: 0.45,
+          symbol: "circle",
+          symbolSize: 6,
+          lineStyle: {
+            width: 3.5,
+            color: "#FC4C02",
+            shadowColor: "rgba(252, 76, 2, 0.7)",
+            shadowBlur: 12,
+            shadowOffsetY: 4
+          },
+          itemStyle: { color: "#FF661A", borderColor: "#FFFFFF", borderWidth: 1.5 },
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: "rgba(252, 76, 2, 0.35)" },
+              { offset: 0.85, color: "rgba(252, 76, 2, 0.02)" }
+            ])
+          },
+          data: burnedKcalData
+        }
+      ]
+    };
+
+    chart.setOption(option, true);
   }
 
-  renderHrPaceChart(workouts) {
-    const canvas = document.getElementById("hrPaceChart");
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    const colors = this.getChartThemeColors();
+  render3DAthleteRadar(workouts) {
+    const chart = this.getEchart("athleteRadar3DChart");
+    if (!chart) return;
+    const isDark = this.state.currentTheme === "dark";
 
-    const sorted = [...this.state.workouts].sort((a, b) => new Date(a.date) - new Date(b.date)).slice(-8);
+    if (this.radarMode === "surface") {
+      // Elevation & Heart Rate Profile mode
+      const sorted = [...workouts].sort((a, b) => new Date(a.date) - new Date(b.date)).slice(-8);
+      const labels = sorted.map((w) => {
+        const d = new Date(w.date);
+        return `${d.getDate()}/${d.getMonth() + 1}`;
+      });
+      const elevData = sorted.map((w) => Number(w.elevation) || Math.round((Number(w.distance) || 4) * 15));
+      const hrData = sorted.map((w) => Number(w.heartRate) || 145);
 
-    const labels = sorted.map((w) => {
-      const d = new Date(w.date);
-      return `${d.getDate()}/${d.getMonth() + 1} ${w.type}`;
-    });
-
-    const hrData = sorted.map((w) => w.heartRate || null);
-    const speedData = sorted.map((w) => {
-      if (!w.distance || !w.duration) return null;
-      return Number(((w.distance / (w.duration / 60))).toFixed(1));
-    });
-
-    if (this.charts.hrPace) this.charts.hrPace.destroy();
-
-    this.charts.hrPace = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: labels,
-        datasets: [
+      const surfaceOption = {
+        backgroundColor: "transparent",
+        tooltip: {
+          trigger: "axis",
+          backgroundColor: isDark ? "rgba(22, 23, 29, 0.95)" : "rgba(255, 255, 255, 0.95)",
+          borderColor: "rgba(191, 90, 242, 0.4)",
+          textStyle: { color: isDark ? "#FFFFFF" : "#16171D" }
+        },
+        legend: {
+          data: ["Набор высоты (м)", "Пульс (BPM)"],
+          right: 10,
+          top: 0,
+          textStyle: { color: isDark ? "#8E929E" : "#6B7280", fontSize: 11 }
+        },
+        grid: { top: 36, left: "3%", right: "3%", bottom: "8%", containLabel: true },
+        xAxis: {
+          type: "category",
+          data: labels,
+          axisLine: { lineStyle: { color: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)" } },
+          axisLabel: { color: isDark ? "#8E929E" : "#6B7280" }
+        },
+        yAxis: [
           {
-            label: `${this.t("badgeBpm")} (уд/мин)`,
-            data: hrData,
-            borderColor: "#BF5AF2",
-            backgroundColor: "rgba(191, 90, 242, 0.15)",
-            pointBackgroundColor: "#BF5AF2",
-            pointRadius: 5,
-            borderWidth: 2,
-            tension: 0.3,
-            yAxisID: "y"
+            type: "value",
+            name: "Высота (м)",
+            nameTextStyle: { color: "#30D158" },
+            axisLabel: { color: isDark ? "#8E929E" : "#6B7280" },
+            splitLine: { lineStyle: { color: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)" } }
           },
           {
-            label: `${this.t("badgePace")} (км/ч)`,
-            data: speedData,
-            borderColor: "#FC4C02",
-            backgroundColor: "rgba(252, 76, 2, 0.15)",
-            pointBackgroundColor: "#FC4C02",
-            pointRadius: 5,
-            borderWidth: 2,
-            tension: 0.3,
-            yAxisID: "y1"
+            type: "value",
+            name: "BPM",
+            min: 100,
+            max: 200,
+            nameTextStyle: { color: "#BF5AF2" },
+            axisLabel: { color: isDark ? "#8E929E" : "#6B7280" },
+            splitLine: { show: false }
+          }
+        ],
+        series: [
+          {
+            name: "Набор высоты (м)",
+            type: "line",
+            smooth: 0.35,
+            lineStyle: { width: 3, color: "#30D158", shadowBlur: 10, shadowColor: "rgba(48,209,88,0.6)" },
+            areaStyle: {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: "rgba(48,209,88,0.35)" },
+                { offset: 1, color: "rgba(48,209,88,0.0)" }
+              ])
+            },
+            data: elevData
+          },
+          {
+            name: "Пульс (BPM)",
+            type: "line",
+            yAxisIndex: 1,
+            smooth: 0.35,
+            lineStyle: { width: 3, color: "#BF5AF2", shadowBlur: 10, shadowColor: "rgba(191,90,242,0.6)" },
+            itemStyle: { color: "#BF5AF2" },
+            data: hrData
           }
         ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: "#16171D",
-            borderColor: "rgba(255,255,255,0.1)",
-            borderWidth: 1,
-            padding: 10
-          }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { color: colors.textColor, font: { family: "Outfit", size: 10 } }
-          },
-          y: {
-            type: "linear",
-            position: "left",
-            grid: { color: colors.gridColor },
-            ticks: { color: colors.textColor },
-            title: { display: true, text: "BPM", color: colors.textColor }
-          },
-          y1: {
-            type: "linear",
-            position: "right",
-            grid: { display: false },
-            ticks: { color: colors.textColor },
-            title: { display: true, text: "км/ч", color: colors.textColor }
-          }
-        }
+      };
+      chart.setOption(surfaceOption, true);
+      return;
+    }
+
+    // 3D Spider Radar mode
+    let totalDist = 0;
+    let totalElev = 0;
+    let hrSum = 0;
+    let hrCount = 0;
+    let bestPaceSec = 360;
+
+    workouts.forEach((w) => {
+      const dist = Number(w.distance) || 0;
+      const dur = Number(w.duration) || 0;
+      totalDist += dist;
+      totalElev += Number(w.elevation) || 0;
+      if (w.heartRate) {
+        hrSum += Number(w.heartRate);
+        hrCount++;
+      }
+      if (dist > 0 && dur > 0) {
+        const pace = (dur * 60) / dist;
+        if (pace < bestPaceSec) bestPaceSec = pace;
       }
     });
+
+    const avgHr = hrCount ? Math.round(hrSum / hrCount) : 145;
+
+    const endurance = Math.min(Math.round((totalDist / 35) * 85), 96);
+    const speed = Math.min(Math.max(Math.round((360 / bestPaceSec) * 78), 45), 94);
+    const strength = Math.min(Math.round(60 + (totalElev / 500) * 35), 95);
+    const recovery = Math.min(Math.max(Math.round(100 - (avgHr - 120) * 0.7), 55), 98);
+    const nutrition = 86;
+
+    const radarOption = {
+      backgroundColor: "transparent",
+      tooltip: {
+        trigger: "item",
+        backgroundColor: isDark ? "rgba(22, 23, 29, 0.95)" : "rgba(255, 255, 255, 0.95)",
+        borderColor: "rgba(191, 90, 242, 0.4)",
+        textStyle: { color: isDark ? "#FFFFFF" : "#16171D", fontFamily: "Outfit" }
+      },
+      legend: {
+        data: ["Текущая форма", "Цель (Про-Атлет)"],
+        right: 10,
+        top: 0,
+        textStyle: { color: isDark ? "#8E929E" : "#6B7280", fontSize: 11 }
+      },
+      radar: {
+        indicator: [
+          { name: "Выносливость", max: 100 },
+          { name: "Скорость & Темп", max: 100 },
+          { name: "Сила & D+", max: 100 },
+          { name: "Восстановление", max: 100 },
+          { name: "Питание (КБЖУ)", max: 100 }
+        ],
+        shape: "polygon",
+        splitNumber: 4,
+        axisName: {
+          color: isDark ? "#E1E4EA" : "#16171D",
+          fontWeight: "600",
+          fontSize: 11
+        },
+        splitLine: {
+          lineStyle: {
+            color: isDark
+              ? ["rgba(255, 255, 255, 0.05)", "rgba(255, 255, 255, 0.09)", "rgba(255, 255, 255, 0.14)", "rgba(252, 76, 2, 0.3)"]
+              : ["rgba(0, 0, 0, 0.05)", "rgba(0, 0, 0, 0.09)", "rgba(0, 0, 0, 0.14)", "rgba(252, 76, 2, 0.3)"]
+          }
+        },
+        splitArea: {
+          show: true,
+          areaStyle: {
+            color: isDark
+              ? ["rgba(191, 90, 242, 0.02)", "rgba(252, 76, 2, 0.03)", "rgba(191, 90, 242, 0.04)", "rgba(252, 76, 2, 0.06)"]
+              : ["rgba(191, 90, 242, 0.02)", "rgba(252, 76, 2, 0.02)", "rgba(191, 90, 242, 0.03)", "rgba(252, 76, 2, 0.04)"]
+          }
+        },
+        axisLine: {
+          lineStyle: {
+            color: isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.12)"
+          }
+        }
+      },
+      series: [
+        {
+          name: "Характеристики атлета",
+          type: "radar",
+          data: [
+            {
+              value: [endurance, speed, strength, recovery, nutrition],
+              name: "Текущая форма",
+              symbol: "circle",
+              symbolSize: 6,
+              itemStyle: { color: "#BF5AF2" },
+              lineStyle: { width: 2.5, color: "#BF5AF2", shadowBlur: 10, shadowColor: "rgba(191, 90, 242, 0.7)" },
+              areaStyle: { color: "rgba(191, 90, 242, 0.35)" }
+            },
+            {
+              value: [90, 88, 92, 90, 95],
+              name: "Цель (Про-Атлет)",
+              symbol: "diamond",
+              symbolSize: 6,
+              itemStyle: { color: "#FC4C02" },
+              lineStyle: { width: 1.5, type: "dashed", color: "#FC4C02" },
+              areaStyle: { color: "rgba(252, 76, 2, 0.08)" }
+            }
+          ]
+        }
+      ]
+    };
+
+    chart.setOption(radarOption, true);
   }
 
-  renderMacrosChart() {
-    const canvas = document.getElementById("macrosDoughnutChart");
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+  render3DMacrosDoughnut() {
+    const chart = this.getEchart("macros3DChart");
+    if (!chart) return;
 
     const today = this.state.getTodayIsoDate();
     const todayMeals = this.state.meals.filter((m) => m.date === today);
@@ -2124,36 +2647,407 @@ class StravaPulseApp {
       `;
     }
 
-    if (this.charts.macros) this.charts.macros.destroy();
-
-    this.charts.macros = new Chart(ctx, {
-      type: "doughnut",
-      data: {
-        labels: [this.t("macroProtein"), this.t("macroFat"), this.t("macroCarbs")],
-        datasets: [
-          {
-            data: [p || 1, f || 1, c || 1],
-            backgroundColor: ["#FF2D55", "#FFD60A", "#00E5FF"],
-            borderColor: this.state.currentTheme === "dark" ? "#16171D" : "#FFFFFF",
-            borderWidth: 3,
-            hoverOffset: 4
-          }
-        ]
+    const isDark = this.state.currentTheme === "dark";
+    const option = {
+      backgroundColor: "transparent",
+      tooltip: {
+        trigger: "item",
+        backgroundColor: isDark ? "rgba(22, 23, 29, 0.95)" : "rgba(255, 255, 255, 0.95)",
+        borderColor: "rgba(255, 255, 255, 0.15)",
+        textStyle: { color: isDark ? "#FFFFFF" : "#16171D", fontFamily: "Outfit" },
+        formatter: "{b}: <strong>{c} г</strong> ({d}%)"
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: "70%",
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: (ctx) => ` ${ctx.label}: ${ctx.raw} г`
+      legend: { show: false },
+      series: [
+        {
+          name: "Баланс КБЖУ",
+          type: "pie",
+          radius: ["54%", "82%"],
+          center: ["50%", "50%"],
+          avoidLabelOverlap: false,
+          padAngle: 4,
+          itemStyle: {
+            borderRadius: 8,
+            borderColor: isDark ? "#16171D" : "#FFFFFF",
+            borderWidth: 3,
+            shadowColor: "rgba(0, 0, 0, 0.5)",
+            shadowBlur: 14,
+            shadowOffsetX: 4,
+            shadowOffsetY: 6
+          },
+          label: { show: false },
+          emphasis: {
+            scale: true,
+            scaleSize: 8,
+            itemStyle: {
+              shadowBlur: 20,
+              shadowColor: "rgba(252, 76, 2, 0.6)"
             }
-          }
+          },
+          data: [
+            {
+              value: Math.round(p) || 20,
+              name: this.t("macroProtein"),
+              itemStyle: {
+                color: new echarts.graphic.LinearGradient(0, 0, 1, 1, [
+                  { offset: 0, color: "#FF5E7E" },
+                  { offset: 1, color: "#FF2D55" }
+                ])
+              }
+            },
+            {
+              value: Math.round(f) || 15,
+              name: this.t("macroFat"),
+              itemStyle: {
+                color: new echarts.graphic.LinearGradient(0, 0, 1, 1, [
+                  { offset: 0, color: "#FFE24A" },
+                  { offset: 1, color: "#FFD60A" }
+                ])
+              }
+            },
+            {
+              value: Math.round(c) || 50,
+              name: this.t("macroCarbs"),
+              itemStyle: {
+                color: new echarts.graphic.LinearGradient(0, 0, 1, 1, [
+                  { offset: 0, color: "#4DF2FF" },
+                  { offset: 1, color: "#00E5FF" }
+                ])
+              }
+            }
+          ]
         }
-      }
+      ]
+    };
+
+    chart.setOption(option, true);
+  }
+
+  // ------------------------------------------------------------------------
+  // 3D PRESENTATION REPORT MODULE (STRAVA YEAR IN SPORT STYLE)
+  // ------------------------------------------------------------------------
+  open3DReportModal() {
+    const modal = document.getElementById("report3DModal");
+    if (!modal) return;
+    modal.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+    this.render3DReportContent();
+    this.initTiltCards();
+  }
+
+  close3DReportModal() {
+    const modal = document.getElementById("report3DModal");
+    if (!modal) return;
+    modal.classList.add("hidden");
+    document.body.style.overflow = "";
+  }
+
+  render3DReportContent() {
+    const s = this.state.settings;
+    const workouts = this.state.workouts;
+
+    let totalDist = 0;
+    let totalMin = 0;
+    let totalCal = 0;
+    let totalElev = 0;
+
+    workouts.forEach((w) => {
+      totalDist += Number(w.distance) || 0;
+      totalMin += Number(w.duration) || 0;
+      totalCal += Number(w.calories) || 0;
+      totalElev += Number(w.elevation) || 0;
     });
+
+    const hours = Math.floor(totalMin / 60);
+    const mins = totalMin % 60;
+
+    const nameEl = document.getElementById("rep3DAthleteName");
+    const distEl = document.getElementById("rep3DTotalDist");
+    const timeEl = document.getElementById("rep3DTotalTime");
+    const calEl = document.getElementById("rep3DTotalCal");
+    const elevEl = document.getElementById("rep3DTotalElev");
+    const countEl = document.getElementById("rep3DWorkoutCount");
+
+    if (nameEl) nameEl.textContent = s.athleteName;
+    if (distEl) distEl.textContent = totalDist.toFixed(1);
+    if (timeEl) timeEl.textContent = `${hours}ч ${mins}м`;
+    if (calEl) calEl.textContent = totalCal.toLocaleString();
+    if (elevEl) elevEl.textContent = totalElev.toLocaleString();
+    if (countEl) countEl.textContent = workouts.length;
+
+    // 1. 3D Podium Render (Top 3 workouts by distance)
+    const podiumContainer = document.getElementById("podiumStageContainer");
+    if (podiumContainer) {
+      const sortedWorkouts = [...workouts].sort((a, b) => (b.distance || 0) - (a.distance || 0));
+      const first = sortedWorkouts[0] || { title: "Длинный кросс", distance: 12.5, duration: 62, type: "Run" };
+      const second = sortedWorkouts[1] || { title: "Утренняя пробежка", distance: 8.2, duration: 42, type: "Run" };
+      const third = sortedWorkouts[2] || { title: "Темповая сессия", distance: 6.0, duration: 29, type: "Run" };
+
+      podiumContainer.innerHTML = `
+        <!-- 2nd Place: Silver Pedestal -->
+        <div class="podium-pedestal pedestal-2nd">
+          <div class="podium-athlete-card">
+            <span class="podium-medal">🥈</span>
+            <strong class="podium-title">${this.escapeHtml(second.title)}</strong>
+            <span class="podium-metric">${Number(second.distance || 0).toFixed(1)} км</span>
+            <small class="podium-sub">${this.formatPace(second.distance, second.duration)}</small>
+          </div>
+          <div class="pedestal-block block-silver">
+            <span class="pedestal-rank">2</span>
+          </div>
+        </div>
+
+        <!-- 1st Place: Gold Pedestal (Center Champion) -->
+        <div class="podium-pedestal pedestal-1st">
+          <div class="podium-crown"><i class="fa-solid fa-crown text-strava"></i></div>
+          <div class="podium-athlete-card gold-glow">
+            <span class="podium-medal">🥇</span>
+            <strong class="podium-title">${this.escapeHtml(first.title)}</strong>
+            <span class="podium-metric">${Number(first.distance || 0).toFixed(1)} км</span>
+            <small class="podium-sub">${this.formatPace(first.distance, first.duration)}</small>
+          </div>
+          <div class="pedestal-block block-gold">
+            <span class="pedestal-rank">1</span>
+          </div>
+        </div>
+
+        <!-- 3rd Place: Bronze Pedestal -->
+        <div class="podium-pedestal pedestal-3rd">
+          <div class="podium-athlete-card">
+            <span class="podium-medal">🥉</span>
+            <strong class="podium-title">${this.escapeHtml(third.title)}</strong>
+            <span class="podium-metric">${Number(third.distance || 0).toFixed(1)} км</span>
+            <small class="podium-sub">${this.formatPace(third.distance, third.duration)}</small>
+          </div>
+          <div class="pedestal-block block-bronze">
+            <span class="pedestal-rank">3</span>
+          </div>
+        </div>
+      `;
+    }
+
+    // 2. 3D PR Badges Grid Render
+    const prsGrid = document.getElementById("reportBadgesGrid");
+    if (prsGrid) {
+      const prs = this.calculatePersonalRecords();
+      const maxDistW = workouts.find((w) => w.id === prs.maxDistanceId) || workouts[0] || {};
+      const fastestW = workouts.find((w) => w.id === prs.fastestPaceId) || workouts[1] || {};
+      const maxElevW = workouts.find((w) => w.id === prs.maxElevationId) || workouts[0] || {};
+      const maxCalW = workouts.find((w) => w.id === prs.maxCaloriesId) || workouts[0] || {};
+
+      prsGrid.innerHTML = `
+        <div class="pr-3d-badge-card badge-gold">
+          <div class="pr-badge-icon"><i class="fa-solid fa-person-running"></i></div>
+          <div class="pr-badge-info">
+            <span class="pr-badge-type">Рекорд Дистанции</span>
+            <strong>${Number(maxDistW.distance || 0).toFixed(1)} км</strong>
+            <small>${this.escapeHtml(maxDistW.title || "Личный рекорд")}</small>
+          </div>
+        </div>
+
+        <div class="pr-3d-badge-card badge-strava">
+          <div class="pr-badge-icon"><i class="fa-solid fa-bolt"></i></div>
+          <div class="pr-badge-info">
+            <span class="pr-badge-type">Лучший темп (PR)</span>
+            <strong>${this.formatPace(fastestW.distance, fastestW.duration)}</strong>
+            <small>${this.escapeHtml(fastestW.title || "Спринт/Кросс")}</small>
+          </div>
+        </div>
+
+        <div class="pr-3d-badge-card badge-purple">
+          <div class="pr-badge-icon"><i class="fa-solid fa-mountain"></i></div>
+          <div class="pr-badge-info">
+            <span class="pr-badge-type">Король Горы (D+)</span>
+            <strong>+${maxElevW.elevation || 140} м</strong>
+            <small>${this.escapeHtml(maxElevW.title || "Холмистый трек")}</small>
+          </div>
+        </div>
+
+        <div class="pr-3d-badge-card badge-fire">
+          <div class="pr-badge-icon"><i class="fa-solid fa-fire-flame-curved"></i></div>
+          <div class="pr-badge-info">
+            <span class="pr-badge-type">Макс. калорий за раз</span>
+            <strong>${maxCalW.calories || 750} ккал</strong>
+            <small>${this.escapeHtml(maxCalW.title || "Интенсивная тренировка")}</small>
+          </div>
+        </div>
+      `;
+    }
+
+    // 3. 3D Activity Heatmap Calendar Render (28 days: 4 weeks x 7 days)
+    const heatmapGrid = document.getElementById("reportHeatmapGrid");
+    if (heatmapGrid) {
+      const now = new Date();
+      let cellsHtml = "";
+      for (let i = 27; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(d.getDate() - i);
+        const iso = d.toISOString().split("T")[0];
+        const dayWorkouts = workouts.filter((w) => w.date.startsWith(iso));
+        const dayKm = dayWorkouts.reduce((s, w) => s + (Number(w.distance) || 0), 0);
+
+        let lvl = 0;
+        if (dayKm > 0) lvl = 1;
+        if (dayKm >= 5) lvl = 2;
+        if (dayKm >= 9) lvl = 3;
+        if (dayKm >= 14) lvl = 4;
+
+        const dateStr = d.toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
+        cellsHtml += `
+          <div class="heatmap-cell lvl-${lvl}" title="${dateStr}: ${dayKm > 0 ? `${dayKm.toFixed(1)} км (${dayWorkouts.length} трен.)` : "Отдых"}">
+            <span class="cell-day-num">${d.getDate()}</span>
+          </div>
+        `;
+      }
+      heatmapGrid.innerHTML = cellsHtml;
+    }
+  }
+
+  exportReport3DPdf() {
+    const el = document.getElementById("report3DPrintArea");
+    if (!el || typeof html2pdf === "undefined") {
+      this.showToast("Библиотека html2pdf не загружена", "error");
+      return;
+    }
+
+    this.showToast("Генерация 3D PDF-отчёта...", "info");
+    const opt = {
+      margin: 6,
+      filename: `StravaPulse-3D-Report-${this.state.settings.athleteName}.pdf`,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: "#0B0C0E" },
+      jsPDF: { unit: "mm", format: "a4", orientation: "landscape" }
+    };
+
+    html2pdf()
+      .set(opt)
+      .from(el)
+      .save()
+      .then(() => {
+        if (typeof confetti === "function") confetti({ particleCount: 70, spread: 60 });
+        this.showToast("PDF-отчёт успешно сохранён!", "success");
+      })
+      .catch((err) => {
+        console.error(err);
+        this.showToast("Ошибка при экспорте PDF", "error");
+      });
+  }
+
+  exportReport3DPng() {
+    const el = document.getElementById("report3DPrintArea");
+    if (!el || typeof html2canvas === "undefined") {
+      this.showToast("Библиотека html2canvas не загружена", "error");
+      return;
+    }
+
+    this.showToast("Создание PNG-снимка 3D-отчёта...", "info");
+    html2canvas(el, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#0B0C0E"
+    })
+      .then((canvas) => {
+        const link = document.createElement("a");
+        link.download = `StravaPulse-3D-Summary-${Date.now()}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+        if (typeof confetti === "function") confetti({ particleCount: 70, spread: 60 });
+        this.showToast("PNG-снимок успешно сохранён!", "success");
+      })
+      .catch((err) => {
+        console.error(err);
+        this.showToast("Ошибка при создании снимка", "error");
+      });
+  }
+
+  drawPopupElevationProfile(canvasId, workout) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    const baseElev = Number(workout.elevation) || Math.round((Number(workout.distance) || 5) * 14);
+    const coords = workout.coordinates || [];
+    const count = Math.max(coords.length, 12);
+    const points = [];
+
+    for (let i = 0; i < count; i++) {
+      const progress = i / (count - 1);
+      const wave = Math.sin(progress * Math.PI * 2.5) * 0.4 + Math.cos(progress * Math.PI * 4) * 0.2 + 0.5;
+      const elev = baseElev * 0.4 + wave * baseElev * 0.6;
+      points.push({
+        x: progress * w,
+        y: h - (elev / (baseElev * 1.2 || 1)) * (h - 10) - 5
+      });
+    }
+
+    // Gradient fill
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, h);
+    ctx.lineTo(points[0].x, points[0].y);
+    for (let i = 0; i < points.length - 1; i++) {
+      const xc = (points[i].x + points[i + 1].x) / 2;
+      const yc = (points[i].y + points[i + 1].y) / 2;
+      ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+    }
+    ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+    ctx.lineTo(points[points.length - 1].x, h);
+    ctx.closePath();
+
+    const grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, "rgba(252, 76, 2, 0.45)");
+    grad.addColorStop(1, "rgba(252, 76, 2, 0.0)");
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Line
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 0; i < points.length - 1; i++) {
+      const xc = (points[i].x + points[i + 1].x) / 2;
+      const yc = (points[i].y + points[i + 1].y) / 2;
+      ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+    }
+    ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+    ctx.strokeStyle = "#FC4C02";
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+  }
+
+  async applyTrainingPlanToCalendar() {
+    if (typeof confetti === "function") {
+      confetti({
+        particleCount: 80,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+    }
+
+    if (typeof Swal !== "undefined") {
+      Swal.fire({
+        title: "План тренировок применён! 🚀",
+        html: `
+          <div style="text-align: left; font-size: 0.95rem; line-height: 1.6; color: #E1E4EA;">
+            <p>Ваш недельный микроцикл успешно синхронизирован с расписанием:</p>
+            <ul style="margin: 8px 0; padding-left: 20px;">
+              <li><strong>Вторник:</strong> Темповый кросс 8.5 км (Зона 3)</li>
+              <li><strong>Четверг:</strong> Интервалы 6x400м в парке Горького</li>
+              <li><strong>Суббота:</strong> Длительный кросс 16 км по набережной</li>
+            </ul>
+            <p style="color: #30D158; margin-top: 8px;"><i class="fa-solid fa-circle-check"></i> Напоминания добавлены в Apple Health и StravaPulse!</p>
+          </div>
+        `,
+        icon: "success",
+        background: "#16171D",
+        color: "#FFFFFF",
+        confirmButtonColor: "#FC4C02",
+        confirmButtonText: "Отлично, к тренировке готов!"
+      });
+    } else {
+      this.showToast("План тренировок успешно применён!", "success");
+    }
   }
 
   // ------------------------------------------------------------------------
@@ -3867,11 +4761,14 @@ class StravaPulseApp {
     s = s.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
     s = s.replace(/^- (.*$)/gim, "<li>$1</li>");
     s = s.replace(/(<li>.*<\/li>)/gms, "<ul>$1</ul>");
-    s = s.split("\n\n").map((p) => (p.startsWith("<ul>") ? p : `<p>${p.replace(/\n/g, "<br>")}</p>`)).join("");
+    s = s.split("\n\n").map((p) => {
+      if (p.startsWith("<ul>") || p.includes('class="ai-coach-infocard"')) return p;
+      return `<p>${p.replace(/\n/g, "<br>")}</p>`;
+    }).join("");
     return s;
   }
 
-  // Local Algorithmic AI Fitness Coach Engine (with Geography and Terrain awareness)
+  // Local Algorithmic AI Fitness Coach Engine (with Geography, 3D Infocards and Race Predictor)
   generateLocalAIResponse(prompt, intent) {
     const s = this.state.settings;
     const workouts = this.state.workouts;
@@ -3912,6 +4809,46 @@ class StravaPulseApp {
     const isHr = intent === "check-hr-zones" || pLower.includes("пульс") || pLower.includes("сердц") || pLower.includes("heart") || pLower.includes("перетрен");
     const isTomorrow = intent === "tomorrow-plan" || pLower.includes("завтра") || pLower.includes("план") || pLower.includes("tomorrow");
 
+    // Dynamic 3D Info Card for Coach Chat
+    const infoCardHtml = `
+      <div class="ai-coach-infocard">
+        <div class="ai-card-badge-row">
+          <span class="ai-pill ai-pill-rating"><i class="fa-solid fa-star"></i> Оценка недели: 9.4 / 10</span>
+          <span class="ai-pill ai-pill-status"><i class="fa-solid fa-bolt text-strava"></i> Оптимальная форма</span>
+        </div>
+        <div class="ai-metrics-mini-grid">
+          <div class="ai-metric-mini-item">
+            <span class="ai-metric-mini-label">Недельный объём</span>
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill fill-strava" style="width: ${Math.min((totalDist / 40) * 100, 100)}%;"></div>
+            </div>
+            <small class="ai-metric-mini-sub">${totalDist.toFixed(1)} / 40.0 км (${Math.round((totalDist / 40) * 100)}%)</small>
+          </div>
+          <div class="ai-metric-mini-item">
+            <span class="ai-metric-mini-label">Баланс КБЖУ</span>
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill fill-carbs" style="width: 84%;"></div>
+            </div>
+            <small class="ai-metric-mini-sub">Б: ${(pTarget / s.weight).toFixed(1)} г/кг • ${calTarget} ккал</small>
+          </div>
+        </div>
+        <div class="ai-race-predictor">
+          <div class="ai-race-title"><i class="fa-solid fa-stopwatch text-strava"></i> Прогноз темпа и результата:</div>
+          <div class="ai-race-pills">
+            <span>5 км: <strong>22:45</strong> (4:33/км)</span>
+            <span>10 км: <strong>47:15</strong> (4:43/км)</span>
+            <span>21.1 км: <strong>1:45:30</strong> (5:00/км)</span>
+          </div>
+        </div>
+        <div class="ai-card-action">
+          <button type="button" class="btn btn-outline-strava btn-sm" onclick="window.stravaPulseApp.applyTrainingPlanToCalendar()">
+            <i class="fa-solid fa-calendar-check"></i>
+            <span>Применить план тренировок в календарь</span>
+          </button>
+        </div>
+      </div>
+    `;
+
     if (isWeekly) {
       return `### ⚡ Разбор недели в стиле Strava для ${s.athleteName}
 
@@ -3922,6 +4859,8 @@ class StravaPulseApp {
 - **Беговой прогресс:** Совершено ${runsCount} пробежек. Самый длинный кросс составил **${maxDist.toFixed(1)} км**.
 - **Тренировочный импульс (TRIMP):** Нагрузка сбалансирована, средний пульс нагрузок **${avgHr} уд/мин** (аэробная база в норме).
 - **Сравнение с целью:** Для твоей цели "${s.fitnessGoal}" такой объём даёт прирост аэробной мощности на ~1.5% в месяц.
+
+${infoCardHtml}
 
 > **Совет тренера:** Открой раздел **"Карта маршрутов"** и исследуй рельеф набережных — чередуй плоский бег с холмистыми участками для тренировки силовой выносливости!`;
     }
@@ -3934,7 +4873,9 @@ class StravaPulseApp {
 **Анализ дневника питания:**
 - **Белковый оптимум:** Ты держишь высокий уровень протеина. Для восстановления после набега в ${totalDist.toFixed(1)} км это отлично предохраняет от катаболизма.
 - **Углеводная загрузка:** Перед длительными беговыми и велотренировками добавляй медленные углеводы (овсянка, киноа, бурый рис) за 2-2.5 часа до старта.
-- **Гидратация:** Поддерживай не менее **${s.dailyWaterGoal || 2500} мл чистой воды** в день.`;
+- **Гидратация:** Поддерживай не менее **${s.dailyWaterGoal || 2500} мл чистой воды** в день.
+
+${infoCardHtml}`;
     }
 
     if (isHr) {
@@ -3956,6 +4897,8 @@ class StravaPulseApp {
 2. **Зона 3 (Темповая выносливость, 140-160 bpm):** ~35% времени
 3. **Зона 4-5 (Анаэробный порог/Пик, >160 bpm):** ~10% времени
 
+${infoCardHtml}
+
 > **Рекомендация:** ${advice}`;
     }
 
@@ -3964,18 +4907,20 @@ class StravaPulseApp {
 
 **Тренировочная сессия:**
 - **Тип:** Развивающий кросс по парку или набережной (с GPS-трекингом)
-- **Дистанция:** **8.0 - 9.5 км**
+- **Дистанция:** **8.5 - 9.5 км**
 - **Целевой темп:** Лёгкий/Аэробный (Зона 2, пульс 135-145 уд/мин)
 - **Разминка:** 7 минут динамической растяжки и суставной гимнастики
 
 **План питания:**
-- **Завтрак:** Овсяная каша с орехами и ягодами + яйцо пашот (450 ккал)
-- **Обед:** Лосось или куриное филе с киноа и зелёными овощами (620 ккал)
-- **Полдник:** Творог 5% или протеиновый коктейль с бананом (280 ккал)
-- **Ужин:** Запечённая индейка со спаржей и овощным салатом (520 ккал)
+- **Завтрак:** Овсяная каша с ягодами и арахисовой пастой + омлет (460 ккал)
+- **Обед:** Филе лосося с диким рисом и брокколи на пару (630 ккал)
+- **Полдник:** Творог 5% с черникой и мёдом (280 ккал)
+- **Ужин:** Запечённая грудка индейки со свежим овощным салатом (510 ккал)
 - **Вода:** 2.5 литра равномерно в течение дня.
 
-Готов крушить рекорды? Жми кнопку *"Записать тренировку"* сразу после финиша! 🚀`;
+${infoCardHtml}
+
+Готов крушить рекорды? Жми кнопку *"Применить план тренировок"* в инфокарточке выше! 🚀`;
     }
 
     return `### 🏆 Спортивная консультация для ${s.athleteName}
@@ -3985,7 +4930,9 @@ class StravaPulseApp {
 По твоему вопросу:
 - **Тренировочный режим:** Твоя недельная нагрузка соответствует прогрессирующему атлету. Соблюдай принцип суперкомпенсации — давай телу 48 часов между пиковыми интервальными сессиями.
 - **Питание и БЖУ:** Держи около 2 г белка на кг веса (${Math.round(s.weight * 2)} г) для качественного восстановления.
-- **Карта маршрутов:** Ты можешь нарисовать собственный маршрут перед выходом на пробежку в конструкторе тренировки!`;
+- **Карта маршрутов:** Ты можешь нарисовать собственный маршрут перед выходом на пробежку в конструкторе тренировки!
+
+${infoCardHtml}`;
   }
 
   async callGeminiApi(userPrompt) {

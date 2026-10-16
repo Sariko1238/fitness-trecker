@@ -124,6 +124,12 @@
         </div>
 
         <div class="top-header-right">
+          <!-- 3D Interactive Report Button -->
+          <button class="btn btn-outline-strava btn-sm" id="topOpen3DReportBtn" title="Сформировать презентационный 3D-отчёт активности">
+            <i class="fa-solid fa-cube text-strava"></i>
+            <span>3D-Отчёт</span>
+          </button>
+
           <!-- Quick Sync Button with Watch Animation -->
           <button class="btn btn-outline btn-sm sync-quick-btn" id="quickAppleSyncBtn">
             <i class="fa-brands fa-apple"></i>
@@ -159,9 +165,13 @@
                 <p data-i18n="dashboardGreeting">Отличный день для закрытия колец активности и личных рекордов.</p>
               </div>
               <div class="dashboard-banner-actions">
+                <button type="button" class="btn btn-primary btn-sm btn-pulse" id="open3DReportModalBtn" title="Сформировать презентационный 3D-отчёт активности">
+                  <i class="fa-solid fa-cube"></i>
+                  <span>📊 3D-Отчёт недели</span>
+                </button>
                 <button type="button" class="btn btn-outline-strava btn-sm" id="downloadDashboardPdfBtn" title="Скачать аналитический PDF отчёт">
                   <i class="fa-solid fa-file-pdf"></i>
-                  <span>Скачать PDF-отчёт</span>
+                  <span>PDF-отчёт</span>
                 </button>
                 <div class="timeframe-selector" id="timeframeSelector">
                   <button class="timeframe-btn active" data-range="7" data-i18n="timeframe7d">7 дней</button>
@@ -216,10 +226,10 @@
               </div>
             </div>
 
-            <!-- Top Metric KPI Cards -->
+            <!-- Top Metric KPI Cards with 3D Tilt & Micro-Sparklines -->
             <div class="kpi-cards-grid">
               <!-- KPI: Total Distance -->
-              <div class="kpi-card card-kpi-orange">
+              <div class="kpi-card card-kpi-orange tilt-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.15" data-tilt-perspective="1000">
                 <div class="kpi-icon-wrap">
                   <i class="fa-solid fa-route"></i>
                 </div>
@@ -231,10 +241,13 @@
                   </div>
                   <span class="kpi-subtext" id="kpiDistanceSub">+12% vs прошлая нед.</span>
                 </div>
+                <div class="kpi-sparkline-wrap">
+                  <canvas id="sparklineDistance" width="65" height="32"></canvas>
+                </div>
               </div>
 
               <!-- KPI: Calories Burned -->
-              <div class="kpi-card card-kpi-fire">
+              <div class="kpi-card card-kpi-fire tilt-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.15" data-tilt-perspective="1000">
                 <div class="kpi-icon-wrap">
                   <i class="fa-solid fa-fire"></i>
                 </div>
@@ -246,10 +259,13 @@
                   </div>
                   <span class="kpi-subtext" id="kpiCaloriesSub">Тренировочный расход</span>
                 </div>
+                <div class="kpi-sparkline-wrap">
+                  <canvas id="sparklineCalories" width="65" height="32"></canvas>
+                </div>
               </div>
 
               <!-- KPI: Active Time -->
-              <div class="kpi-card card-kpi-blue">
+              <div class="kpi-card card-kpi-blue tilt-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.15" data-tilt-perspective="1000">
                 <div class="kpi-icon-wrap">
                   <i class="fa-regular fa-clock"></i>
                 </div>
@@ -260,10 +276,13 @@
                   </div>
                   <span class="kpi-subtext" id="kpiTimeSub">6 тренировок</span>
                 </div>
+                <div class="kpi-sparkline-wrap">
+                  <canvas id="sparklineTime" width="65" height="32"></canvas>
+                </div>
               </div>
 
-              <!-- KPI: Average Heart Rate -->
-              <div class="kpi-card card-kpi-purple">
+              <!-- KPI: Average Heart Rate & TSS Gauge -->
+              <div class="kpi-card card-kpi-purple tilt-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.15" data-tilt-perspective="1000">
                 <div class="kpi-icon-wrap heart-beat">
                   <i class="fa-solid fa-heart-pulse"></i>
                 </div>
@@ -275,81 +294,109 @@
                   </div>
                   <span class="kpi-subtext" id="kpiHeartRateSub">Аэробная зона 2-3</span>
                 </div>
+                <div class="kpi-sparkline-wrap">
+                  <canvas id="sparklineHr" width="65" height="32"></canvas>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- 4 Interactive Charts Grid -->
+          <!-- Relative Effort & Fitness Fatigue 3D Gauge Banner -->
+          <div class="card tss-fitness-banner tilt-card" data-tilt data-tilt-max-glare="0.1" data-tilt-perspective="1200">
+            <div class="tss-banner-content">
+              <div class="tss-left">
+                <div class="tss-badge">
+                  <i class="fa-solid fa-gauge-high text-strava"></i>
+                  <span>STRAVA RELATIVE EFFORT & 3D ФОРМА</span>
+                </div>
+                <h3 class="tss-title">Индекс формы и нагрузки атлета: <span id="tssStatusTitle" class="text-green">Оптимальная форма</span></h3>
+                <p class="tss-desc" id="tssStatusDesc">Текущий недельный тренировочный импульс сбалансирован. Высокий уровень восстановления (94%), низкий риск травматизма и перетренированности.</p>
+                <div class="tss-metrics-pills">
+                  <span class="tss-pill">Нагрузка (TSS): <strong id="tssValue">184</strong></span>
+                  <span class="tss-pill">Фитнес (CTL): <strong id="ctlValue">68</strong></span>
+                  <span class="tss-pill">Усталость (ATL): <strong id="atlValue">52</strong></span>
+                  <span class="tss-pill">Свежесть (TSB): <strong id="tsbValue" class="text-green">+16</strong></span>
+                </div>
+              </div>
+              <div class="tss-right">
+                <div class="tss-gauge-box">
+                  <div id="tssGaugeChart" class="tss-gauge-container"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4 Interactive 3D Charts Grid (Apache ECharts 3D & Isometric Visualizations) -->
           <div class="charts-grid">
-            <!-- Chart 1: Training Load & Distance -->
-            <div class="card chart-card">
+            <!-- Chart 1: 3D Cylindrical Bar Chart (Training Load & Distance) -->
+            <div class="card chart-card tilt-card" data-tilt data-tilt-max-glare="0.08" data-tilt-perspective="1400">
               <div class="card-header">
                 <div>
                   <h3 class="card-title">
-                    <i class="fa-solid fa-chart-column text-strava"></i>
-                    <span data-i18n="chartLoadTitle">Нагрузка и Дистанция по дням</span>
+                    <i class="fa-solid fa-cubes text-strava"></i>
+                    <span data-i18n="chartLoadTitle">3D Нагрузка и Дистанция (Изометрические колонны)</span>
                   </h3>
-                  <p class="card-subtitle" data-i18n="chartLoadSubtitle">Километраж и длительность тренировок</p>
+                  <p class="card-subtitle" data-i18n="chartLoadSubtitle">3D-цилиндры километража со свечением и объёмными гранями</p>
                 </div>
                 <div class="chart-badges">
-                  <span class="badge badge-strava" data-i18n="badgeKm">Км</span>
-                  <span class="badge badge-blue" data-i18n="badgeMin">Мин</span>
+                  <span class="badge badge-strava"><i class="fa-solid fa-cube"></i> 3D Bar</span>
+                  <span class="badge badge-blue">Время</span>
                 </div>
               </div>
               <div class="chart-container">
-                <canvas id="trainingLoadChart"></canvas>
+                <div id="trainingLoad3DChart" class="echarts-3d-box"></div>
               </div>
             </div>
 
-            <!-- Chart 2: Energy Balance (Burned vs Consumed) -->
-            <div class="card chart-card">
+            <!-- Chart 2: 3D Energy Balance (Burned vs Consumed 3D Wave/Area Spline) -->
+            <div class="card chart-card tilt-card" data-tilt data-tilt-max-glare="0.08" data-tilt-perspective="1400">
               <div class="card-header">
                 <div>
                   <h3 class="card-title">
-                    <i class="fa-solid fa-scale-balanced text-green"></i>
-                    <span data-i18n="chartEnergyTitle">Энергетический баланс (Потреблено vs Сожжено)</span>
+                    <i class="fa-solid fa-wave-square text-green"></i>
+                    <span data-i18n="chartEnergyTitle">3D Энергетический баланс (Питание vs Расход)</span>
                   </h3>
-                  <p class="card-subtitle" data-i18n="chartEnergySubtitle">Калории из питания против потраченных калорий</p>
+                  <p class="card-subtitle" data-i18n="chartEnergySubtitle">Многослойный 3D-сплайн с неоновым контуром дефицита/профицита</p>
                 </div>
                 <div class="chart-badges">
-                  <span class="badge badge-green" data-i18n="badgeFood">Питание</span>
-                  <span class="badge badge-fire" data-i18n="badgeBurned">Расход</span>
+                  <span class="badge badge-green">Питание</span>
+                  <span class="badge badge-fire">Расход</span>
                 </div>
               </div>
               <div class="chart-container">
-                <canvas id="energyBalanceChart"></canvas>
+                <div id="energyBalance3DChart" class="echarts-3d-box"></div>
               </div>
             </div>
 
-            <!-- Chart 3: Heart Rate & Pace Dynamics -->
-            <div class="card chart-card">
+            <!-- Chart 3: 3D Elevation & Athlete Radar Profile -->
+            <div class="card chart-card tilt-card" data-tilt data-tilt-max-glare="0.08" data-tilt-perspective="1400">
               <div class="card-header">
                 <div>
                   <h3 class="card-title">
-                    <i class="fa-solid fa-heart-pulse text-purple"></i>
-                    <span data-i18n="chartHrPaceTitle">Динамика пульса и темпа</span>
+                    <i class="fa-solid fa-compass-drafting text-purple"></i>
+                    <span data-i18n="chartHrPaceTitle">3D Радар формы атлета & Пульс/Рельеф</span>
                   </h3>
-                  <p class="card-subtitle" data-i18n="chartHrPaceSubtitle">Средний пульс и скорость по тренировкам</p>
+                  <p class="card-subtitle" data-i18n="chartHrPaceSubtitle">Многомерная паутинная модель: Выносливость, Скорость, Сила</p>
                 </div>
                 <div class="chart-badges">
-                  <span class="badge badge-purple" data-i18n="badgeBpm">Пульс</span>
-                  <span class="badge badge-orange" data-i18n="badgePace">Темп</span>
+                  <button class="chart-mini-tab active" id="btnRadarMode">3D Радар</button>
+                  <button class="chart-mini-tab" id="btnSurfaceMode">Пульс/Рельеф</button>
                 </div>
               </div>
               <div class="chart-container">
-                <canvas id="hrPaceChart"></canvas>
+                <div id="athleteRadar3DChart" class="echarts-3d-box"></div>
               </div>
             </div>
 
-            <!-- Chart 4: Macronutrients Doughnut -->
-            <div class="card chart-card">
+            <!-- Chart 4: 3D Layered Macronutrients Doughnut & Fitness Rings -->
+            <div class="card chart-card tilt-card" data-tilt data-tilt-max-glare="0.08" data-tilt-perspective="1400">
               <div class="card-header">
                 <div>
                   <h3 class="card-title">
                     <i class="fa-solid fa-chart-pie text-cyan"></i>
-                    <span data-i18n="chartMacrosTitle">Баланс макронутриентов (БЖУ)</span>
+                    <span data-i18n="chartMacrosTitle">3D-Кольца КБЖУ с фаской и выдвижением</span>
                   </h3>
-                  <p class="card-subtitle" data-i18n="chartMacrosSubtitle">Соотношение белков, жиров и углеводов</p>
+                  <p class="card-subtitle" data-i18n="chartMacrosSubtitle">Объёмная кольцевая диаграмма с 3D-тенями и hover-эффектом</p>
                 </div>
                 <div class="chart-badges">
                   <span class="badge badge-cyan" data-i18n="badgeToday">Сегодня</span>
@@ -357,7 +404,7 @@
               </div>
               <div class="chart-container-split">
                 <div class="chart-half">
-                  <canvas id="macrosDoughnutChart"></canvas>
+                  <div id="macros3DChart" class="echarts-doughnut-3d-box"></div>
                 </div>
                 <div class="macros-breakdown" id="macrosBreakdownList">
                   <!-- Injected via JavaScript -->
@@ -1365,6 +1412,121 @@
     </div>
   </div>
 
+  <!-- ======================================================== -->
+  <!-- 3D INTERACTIVE PRESENTATION REPORT MODAL (STRAVA YEAR IN SPORT STYLE) -->
+  <!-- ======================================================== -->
+  <div class="modal modal-report-3d hidden" id="report3DModal">
+    <div class="modal-backdrop" id="report3DModalBackdrop"></div>
+    <div class="modal-dialog modal-dialog-3d-report">
+      <div class="modal-content modal-content-3d-glass" id="report3DPrintArea">
+        <div class="report-3d-header">
+          <div class="report-3d-brand">
+            <div class="report-badge-glow">
+              <i class="fa-solid fa-cube text-strava"></i>
+            </div>
+            <div>
+              <span class="report-period-tag" id="rep3DPeriodTag">НЕДЕЛЬНЫЙ 3D-ОТЧЁТ АТЛЕТА</span>
+              <h2 class="report-athlete-title"><span id="rep3DAthleteName">Алексей Романов</span> — Pulse 3D Summary</h2>
+            </div>
+          </div>
+          <div class="report-header-actions">
+            <button type="button" class="btn btn-outline-strava btn-sm" id="downloadReportPdfBtn">
+              <i class="fa-solid fa-file-pdf"></i>
+              <span>PDF Отчёт</span>
+            </button>
+            <button type="button" class="btn btn-primary btn-sm" id="downloadReportPngBtn">
+              <i class="fa-solid fa-camera"></i>
+              <span>PNG Снимок</span>
+            </button>
+            <button type="button" class="modal-close-btn" id="close3DReportBtn" aria-label="Закрыть">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="report-3d-body">
+          <!-- Top 4 3D Glass Hero Cards -->
+          <div class="report-3d-hero-grid">
+            <div class="report-hero-card tilt-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.2">
+              <span class="report-hero-label">Общая дистанция</span>
+              <div class="report-hero-val"><strong id="rep3DTotalDist">0.0</strong> <small>км</small></div>
+              <span class="report-hero-trend text-green"><i class="fa-solid fa-arrow-trend-up"></i> Активная фаза</span>
+            </div>
+            <div class="report-hero-card tilt-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.2">
+              <span class="report-hero-label">Время тренировок</span>
+              <div class="report-hero-val"><strong id="rep3DTotalTime">0ч 0м</strong></div>
+              <span class="report-hero-trend text-strava"><i class="fa-solid fa-fire"></i> <span id="rep3DWorkoutCount">0</span> сессий</span>
+            </div>
+            <div class="report-hero-card tilt-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.2">
+              <span class="report-hero-label">Сожжено энергии</span>
+              <div class="report-hero-val"><strong id="rep3DTotalCal">0</strong> <small>ккал</small></div>
+              <span class="report-hero-trend text-fire"><i class="fa-solid fa-bolt"></i> Интенсивность</span>
+            </div>
+            <div class="report-hero-card tilt-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.2">
+              <span class="report-hero-label">Набор высоты (D+)</span>
+              <div class="report-hero-val"><strong id="rep3DTotalElev">0</strong> <small>м</small></div>
+              <span class="report-hero-trend text-purple"><i class="fa-solid fa-mountain"></i> Горный рельеф</span>
+            </div>
+          </div>
+
+          <!-- 3D Podium of Top Workouts & 3D PR Badges -->
+          <div class="report-3d-middle-row">
+            <!-- 3D Podium -->
+            <div class="podium-card-wrap tilt-card" data-tilt data-tilt-perspective="1200">
+              <div class="podium-header">
+                <h3><i class="fa-solid fa-trophy text-strava"></i> 3D-Подиум лучших тренировок</h3>
+                <span class="badge badge-strava">Топ Рекорды</span>
+              </div>
+              <div class="podium-stage-container" id="podiumStageContainer">
+                <!-- Dynamically rendered 3D podium pedestals: 2nd (Silver), 1st (Gold), 3rd (Bronze) -->
+              </div>
+            </div>
+
+            <!-- 3D PR Badges Showcase -->
+            <div class="badges-showcase-wrap tilt-card" data-tilt data-tilt-perspective="1200">
+              <div class="podium-header">
+                <h3><i class="fa-solid fa-medal text-strava"></i> Зал Личных Рекордов (PR)</h3>
+                <span class="badge badge-subtle">Достижения</span>
+              </div>
+              <div class="badges-showcase-grid" id="reportBadgesGrid">
+                <!-- Injected via JavaScript -->
+              </div>
+            </div>
+          </div>
+
+          <!-- 3D Activity Heatmap Calendar -->
+          <div class="report-heatmap-card tilt-card" data-tilt data-tilt-perspective="1400">
+            <div class="heatmap-header">
+              <div>
+                <h3><i class="fa-solid fa-calendar-days text-strava"></i> 3D Карта активности и консистентности (Activity Heatmap)</h3>
+                <p>Интенсивность тренировок и закрытие активности по дням недели</p>
+              </div>
+              <div class="heatmap-legend">
+                <span class="legend-box lvl-0"></span> <small>Отдых</small>
+                <span class="legend-box lvl-1"></span>
+                <span class="legend-box lvl-2"></span>
+                <span class="legend-box lvl-3"></span>
+                <span class="legend-box lvl-4"></span> <small>Пик нагрузки</small>
+              </div>
+            </div>
+            <div class="heatmap-grid" id="reportHeatmapGrid">
+              <!-- Injected via JavaScript -->
+            </div>
+          </div>
+        </div>
+
+        <div class="report-3d-footer">
+          <div class="report-footer-left">
+            <span>Powered by <strong>StravaPulse AI 3.0 Engine</strong> • Автоматическая аналитика рекордов</span>
+          </div>
+          <div class="report-footer-right">
+            <button type="button" class="btn btn-outline" id="closeReportFooterBtn">Закрыть</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notifications Container -->
   <div class="toast-container" id="toastContainer"></div>
 
@@ -1410,6 +1572,12 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <!-- PapaParse CDN (Robust CSV Parsing and Export) -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  
+  <!-- Apache ECharts & ECharts-GL CDN (3D Charts & Isometric Visualizations) -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts-gl@2.0.9/dist/echarts-gl.min.js"></script>
+  <!-- Vanilla-Tilt.js CDN (3D Gyroscope / Mouse Tilt with Glass Glare) -->
+  <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.8.1/dist/vanilla-tilt.min.js"></script>
 
   <!-- Application Logic -->
   <script src="app.js"></script>
