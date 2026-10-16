@@ -1,6 +1,6 @@
 /**
- * StravaPulse AI — Athletic Fitness Tracker, Nutrition & AI Coach Platform
- * Pure Vanilla JavaScript (ES6+), Chart.js Integration, LocalStorage Persistence
+ * StravaPulse AI — Athletic Fitness Tracker, Nutrition, Leaflet Maps & AI Coach
+ * Pure Vanilla JavaScript (ES6+), Leaflet.js, Chart.js, LocalStorage Persistence
  */
 
 // ==========================================================================
@@ -10,6 +10,7 @@ const I18N = {
   ru: {
     navDashboard: "Дашборд & Графики",
     navWorkouts: "Лента тренировок",
+    navMap: "Карта маршрутов",
     navNutrition: "Дневник питания",
     navSync: "Apple Health & CSV",
     navCoach: "ИИ-Тренер Pulse",
@@ -17,6 +18,8 @@ const I18N = {
     healthKitReady: "HealthKit готов",
     titleDashboard: "Дашборд и Аналитика",
     subtitleDashboard: "Сводка тренировок, энергии и прогресса",
+    titleMap: "GPS Карта маршрутов",
+    subtitleMap: "Интерактивная карта пробежек и заездов в стиле Strava",
     quickSyncApple: "Apple Health Sync",
     btnNewActivity: "Тренировка",
     btnNewMeal: "Приём пищи",
@@ -52,6 +55,20 @@ const I18N = {
     chartMacrosTitle: "Баланс макронутриентов (БЖУ)",
     chartMacrosSubtitle: "Соотношение белков, жиров и углеводов",
     badgeToday: "Сегодня",
+    dashMapBadge: "Strava Live GPS Map",
+    dashMapTitle: "Карта маршрутов и географический прогресс",
+    dashMapDesc: "Все ваши пробежки и велозаезды синхронизированы на интерактивной карте мира. Исследуйте треки, высотный рельеф и темп в реальном времени.",
+    btnOpenWorldMap: "Открыть Карту Мира",
+    btnFitAll: "Весь мир",
+    btnLocateMe: "Найти меня",
+    mapGpsTracks: "GPS Маршрутов",
+    mapTotalKm: "Общая дистанция",
+    mapActiveCity: "Локации",
+    drawerRoutesTitle: "Маршруты в фокусе",
+    routeBuilderLabel: "Интерактивный GPS-маршрут (кликните для рисования)",
+    btnLiveGps: "Записать по GPS (Live)",
+    btnPresetRoute: "Круг в парке",
+    btnClearRoute: "Очистить",
     searchWorkoutsPlaceholder: "Поиск по названию или заметкам...",
     filterSport: "Спорт:",
     sportAll: "Все активности",
@@ -92,20 +109,20 @@ const I18N = {
     featRings: "Закрытие колец активности",
     btnStartLiveSync: "Запустить Live-синхронизацию",
     btnSampleHealthExport: "Демо HealthKit экспорт",
-    csvImportTitle: "Импорт файлов CSV / Apple Health XML",
+    csvImportTitle: "Импорт файлов CSV / Apple Health XML / GPX",
     csvImportSubtitle: "Перетащите файл или выберите на компьютере",
     btnDownloadTemplate: "Шаблон CSV",
-    dropzonePrompt: "Перетащите сюда файл .csv или .xml",
-    dropzoneSub: "Поддерживаются стандартные CSV Strava/Garmin и выгрузка HealthKit",
+    dropzonePrompt: "Перетащите сюда файл .csv, .xml или .gpx",
+    dropzoneSub: "Поддерживаются файлы GPX, CSV Strava/Garmin и выгрузка HealthKit",
     btnBrowseFiles: "Выбрать файл",
     importSuccessTitle: "Импорт успешно завершён",
     exportHubTitle: "Экспорт и Резервное копирование",
-    exportWorkoutsTitle: "Тренировки (CSV)",
-    exportWorkoutsDesc: "Полный архив со всеми параметрами темпа, пульса и калорий",
+    exportWorkoutsTitle: "Тренировки (CSV с GPS)",
+    exportWorkoutsDesc: "Полный архив со всеми параметрами темпа, пульса, калорий и координат",
     exportNutritionTitle: "Дневник питания (CSV)",
     exportNutritionDesc: "Все приёмы пищи, граммы БЖУ, калории и время приёма",
     exportBackupTitle: "Полный бэкап (JSON)",
-    exportBackupDesc: "Вся история, настройки, цели и переписка с ИИ-тренером",
+    exportBackupDesc: "Вся история, координаты маршрутов, настройки и переписка с ИИ-тренером",
     btnExport: "Экспорт",
     btnBackup: "Бэкап",
     coachOnlineStatus: "Аналитик онлайн",
@@ -121,8 +138,8 @@ const I18N = {
     promptNutrition: "Оцени баланс КБЖУ и питание",
     promptHr: "Проверь пульс и риск перетренированности",
     promptTomorrow: "План тренировок и питания на завтра",
-    coachWelcomeMsg: "Привет, атлет! Я твой персональный спортивный аналитик и тренер. Я изучил твои свежие тренировки, темп, зоны пульса и питание за последние 7 дней. Выбери быстрый запрос вверху или напиши любой вопрос о своей форме, питании или восстановлении!",
-    coachInputPlaceholder: "Спроси тренера о пульсе, питании или составлении плана...",
+    coachWelcomeMsg: "Привет, атлет! Я твой персональный спортивный аналитик и тренер. Я изучил твои свежие тренировки, темп, зоны пульса, GPS-маршруты и питание за последние 7 дней. Выбери быстрый запрос вверху или напиши любой вопрос!",
+    coachInputPlaceholder: "Спроси тренера о пульсе, питании или маршрутах...",
     clearChat: "Очистить историю",
     chatDisclaimer: "Советы носят рекомендательный характер для спортивной формы",
     modalAddWorkoutTitle: "Новая тренировка",
@@ -174,6 +191,7 @@ const I18N = {
     btnSaveSettings: "Сохранить настройки",
     mobDashboard: "Дашборд",
     mobWorkouts: "Тренировки",
+    mobMap: "Карта",
     mobNutrition: "Питание",
     mobSync: "Синхрон",
     mobCoach: "ИИ",
@@ -184,11 +202,16 @@ const I18N = {
     mealDeletedToast: "Блюдо удалено",
     settingsSavedToast: "Настройки атлета обновлены!",
     demoRestoredToast: "Демо-данные успешно загружены!",
-    syncCompleteToast: "Синхронизация Apple Health успешно завершена! Добавлено 3 тренировки."
+    syncCompleteToast: "Синхронизация Apple Health успешно завершена! Добавлено 3 тренировки с GPS.",
+    gpsLocatedToast: "Ваша текущая геопозиция определена!",
+    gpxImportedToast: "Маршрут GPX успешно загружен на карту!",
+    gpsLiveStartedToast: "Запись GPS активирована! Симуляция бега запущена...",
+    gpsLiveStoppedToast: "Маршрут зафиксирован и добавлен в тренировку!"
   },
   en: {
     navDashboard: "Dashboard & Analytics",
     navWorkouts: "Activities Feed",
+    navMap: "Routes Map",
     navNutrition: "Nutrition & Macros",
     navSync: "Apple Health & CSV",
     navCoach: "Pulse AI Coach",
@@ -196,6 +219,8 @@ const I18N = {
     healthKitReady: "HealthKit Ready",
     titleDashboard: "Dashboard & Analytics",
     subtitleDashboard: "Activity, nutrition and fitness summary",
+    titleMap: "GPS Routes & World Map",
+    subtitleMap: "Interactive Strava-style running & cycling map",
     quickSyncApple: "Apple Health Sync",
     btnNewActivity: "Workout",
     btnNewMeal: "Meal Log",
@@ -231,6 +256,20 @@ const I18N = {
     chartMacrosTitle: "Macronutrient Balance",
     chartMacrosSubtitle: "Protein, Fat and Carbs ratio",
     badgeToday: "Today",
+    dashMapBadge: "Strava Live GPS Map",
+    dashMapTitle: "Running Routes & Geographic Progression",
+    dashMapDesc: "All your runs and rides synchronized on a global interactive map. Explore terrain, elevation, and pace in real-time.",
+    btnOpenWorldMap: "Open World Map",
+    btnFitAll: "World View",
+    btnLocateMe: "Locate Me",
+    mapGpsTracks: "GPS Tracks",
+    mapTotalKm: "Total Distance",
+    mapActiveCity: "Locations",
+    drawerRoutesTitle: "Routes in Focus",
+    routeBuilderLabel: "Interactive GPS Route (click to draw)",
+    btnLiveGps: "Record GPS (Live)",
+    btnPresetRoute: "Park Loop",
+    btnClearRoute: "Clear",
     searchWorkoutsPlaceholder: "Search by title or notes...",
     filterSport: "Sport:",
     sportAll: "All Activities",
@@ -271,20 +310,20 @@ const I18N = {
     featRings: "Close Activity Rings",
     btnStartLiveSync: "Start Live HealthKit Sync",
     btnSampleHealthExport: "Demo HealthKit Export",
-    csvImportTitle: "Import CSV / Apple Health XML",
+    csvImportTitle: "Import CSV / Apple Health XML / GPX",
     csvImportSubtitle: "Drag & drop files or browse locally",
     btnDownloadTemplate: "CSV Template",
-    dropzonePrompt: "Drag & drop your .csv or .xml file here",
-    dropzoneSub: "Supports Strava, Garmin, and Apple HealthKit workout exports",
+    dropzonePrompt: "Drag & drop your .csv, .xml or .gpx file here",
+    dropzoneSub: "Supports GPX, Strava/Garmin CSV and Apple HealthKit workout exports",
     btnBrowseFiles: "Browse Files",
     importSuccessTitle: "Import Succeeded",
     exportHubTitle: "Export & Backup Center",
-    exportWorkoutsTitle: "Workouts (CSV)",
-    exportWorkoutsDesc: "Complete archive with distance, pace, HR, and calorie logs",
+    exportWorkoutsTitle: "Workouts (CSV with GPS)",
+    exportWorkoutsDesc: "Complete archive with distance, pace, HR, coordinates, and calories",
     exportNutritionTitle: "Nutrition Diary (CSV)",
     exportNutritionDesc: "All logged meals with macro breakdown and timestamps",
     exportBackupTitle: "Full Backup (JSON)",
-    exportBackupDesc: "All athlete history, custom goals, and AI coach interactions",
+    exportBackupDesc: "All athlete history, GPS routes, custom goals, and AI interactions",
     btnExport: "Export",
     btnBackup: "Backup",
     coachOnlineStatus: "Coach Online",
@@ -300,8 +339,8 @@ const I18N = {
     promptNutrition: "Evaluate nutrition & macro balance",
     promptHr: "Check heart rate zones & fatigue risk",
     promptTomorrow: "Generate tomorrow's workout & meal plan",
-    coachWelcomeMsg: "Hey athlete! I'm your personal sports scientist and coach. I've analyzed your recent workouts, pace curves, HR zones, and nutrition over the past 7 days. Tap any quick prompt above or ask me anything!",
-    coachInputPlaceholder: "Ask coach about your pace, heart rate, or nutrition...",
+    coachWelcomeMsg: "Hey athlete! I'm your personal sports scientist and coach. I've analyzed your recent workouts, pace curves, HR zones, GPS routes, and nutrition over the past 7 days. Tap any quick prompt above or ask me anything!",
+    coachInputPlaceholder: "Ask coach about your pace, routes, or nutrition...",
     clearChat: "Clear History",
     chatDisclaimer: "Advice is generated for athletic fitness and training purposes",
     modalAddWorkoutTitle: "Log Workout",
@@ -353,6 +392,7 @@ const I18N = {
     btnSaveSettings: "Save Settings",
     mobDashboard: "Dashboard",
     mobWorkouts: "Activities",
+    mobMap: "Map",
     mobNutrition: "Nutrition",
     mobSync: "Sync",
     mobCoach: "AI Coach",
@@ -363,7 +403,11 @@ const I18N = {
     mealDeletedToast: "Meal deleted",
     settingsSavedToast: "Profile targets updated!",
     demoRestoredToast: "Demo activities restored!",
-    syncCompleteToast: "Apple Health live sync complete! 3 activities imported."
+    syncCompleteToast: "Apple Health live sync complete! 3 activities with GPS imported.",
+    gpsLocatedToast: "Current location pinpointed!",
+    gpxImportedToast: "GPX track successfully added to map!",
+    gpsLiveStartedToast: "GPS recording active! Live run tracker running...",
+    gpsLiveStoppedToast: "GPS track recorded and assigned to workout!"
   }
 };
 
@@ -375,7 +419,7 @@ class AppState {
     this.currentLang = localStorage.getItem("stravapulse_lang") || "ru";
     this.currentTheme = localStorage.getItem("stravapulse_theme") || "dark";
     this.currentTab = "dashboard";
-    this.dashboardTimeframe = "7"; // 7, 30, all
+    this.dashboardTimeframe = "7";
     this.selectedNutritionDate = this.getTodayIsoDate();
 
     this.settings = this.loadSettings();
@@ -417,7 +461,16 @@ class AppState {
   loadWorkouts() {
     const saved = localStorage.getItem("stravapulse_workouts");
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) { }
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // If existing workouts lack coordinates, augment with seed tracks
+          if (!parsed[0].coordinates) {
+            return this.generateSeedWorkouts();
+          }
+          return parsed;
+        }
+      } catch (e) { }
     }
     return this.generateSeedWorkouts();
   }
@@ -462,7 +515,7 @@ class AppState {
     localStorage.setItem("stravapulse_chat", JSON.stringify(this.chatHistory));
   }
 
-  // Generate realistic 7-day historical seed workouts
+  // Generate realistic 7-day historical seed workouts with GPS coordinates
   generateSeedWorkouts() {
     const now = new Date();
     const day = (daysAgo, hour = 9, min = 30) => {
@@ -485,8 +538,15 @@ class AppState {
         elevation: 45,
         kudos: 14,
         isKudoed: false,
-        notes: "Интервалы 5x1000м в темпе 4:40 мин/км. Чувствую отличный тонус в ногах!",
-        device: "Apple Watch Ultra 2"
+        notes: "Интервалы 5x1000м в темпе 4:40 мин/км. Вокруг стадиона и набережной Лужников.",
+        device: "Apple Watch Ultra 2",
+        locationName: "Москва, Лужники",
+        coordinates: [
+          [55.7155, 37.5535], [55.7162, 37.5502], [55.7178, 37.5460], [55.7198, 37.5442],
+          [55.7225, 37.5458], [55.7251, 37.5492], [55.7275, 37.5540], [55.7288, 37.5595],
+          [55.7282, 37.5655], [55.7260, 37.5702], [55.7228, 37.5728], [55.7195, 37.5710],
+          [55.7168, 37.5662], [55.7150, 37.5605], [55.7155, 37.5535]
+        ]
       },
       {
         id: "w-2",
@@ -500,8 +560,16 @@ class AppState {
         elevation: 320,
         kudos: 21,
         isKudoed: true,
-        notes: "Аэробная база, стабильный каденс 92 rpm. Попутный ветер на обратном пути.",
-        device: "Garmin Edge / Apple Health"
+        notes: "Аэробная база, стабильный каденс 92 rpm. Воробьёвы горы и набережные.",
+        device: "Garmin Edge / Apple Health",
+        locationName: "Москва, Воробьёвы Горы",
+        coordinates: [
+          [55.7095, 37.5422], [55.7118, 37.5380], [55.7145, 37.5310], [55.7180, 37.5250],
+          [55.7230, 37.5180], [55.7285, 37.5120], [55.7330, 37.5050], [55.7380, 37.4980],
+          [55.7420, 37.4920], [55.7450, 37.4850], [55.7485, 37.4780], [55.7510, 37.4690],
+          [55.7480, 37.4620], [55.7420, 37.4680], [55.7360, 37.4790], [55.7300, 37.4910],
+          [55.7240, 37.5050], [55.7180, 37.5220], [55.7120, 37.5360], [55.7095, 37.5422]
+        ]
       },
       {
         id: "w-3",
@@ -516,7 +584,9 @@ class AppState {
         kudos: 9,
         isKudoed: false,
         notes: "Кроль, отработка высокого локтя и дыхания на 3 гребка.",
-        device: "Apple Watch Series 9"
+        device: "Apple Watch Series 9",
+        locationName: "Аквакомплекс Лужники",
+        coordinates: []
       },
       {
         id: "w-4",
@@ -531,7 +601,9 @@ class AppState {
         kudos: 18,
         isKudoed: false,
         notes: "Приседания со штангой, выпады, планка с отягощением. Пульс держался в зоне 3.",
-        device: "Apple Health Workout"
+        device: "Apple Health Workout",
+        locationName: "Спортивный клуб",
+        coordinates: []
       },
       {
         id: "w-5",
@@ -545,8 +617,15 @@ class AppState {
         elevation: 20,
         kudos: 11,
         isKudoed: false,
-        notes: "Лёгкая 2-я зона пульса. Разгрузочный кросс после силовой.",
-        device: "Apple Watch Ultra 2"
+        notes: "Лёгкая 2-я зона пульса. Парк Горького и Крымская набережная.",
+        device: "Apple Watch Ultra 2",
+        locationName: "Москва, Парк Горького",
+        coordinates: [
+          [55.7340, 37.6045], [55.7322, 37.6002], [55.7300, 37.5955], [55.7275, 37.5910],
+          [55.7245, 37.5875], [55.7215, 37.5840], [55.7185, 37.5815], [55.7150, 37.5802],
+          [55.7185, 37.5815], [55.7215, 37.5840], [55.7245, 37.5875], [55.7275, 37.5910],
+          [55.7300, 37.5955], [55.7322, 37.6002], [55.7340, 37.6045]
+        ]
       },
       {
         id: "w-6",
@@ -560,8 +639,14 @@ class AppState {
         elevation: 210,
         kudos: 16,
         isKudoed: true,
-        notes: "Техничные подъёмы и грунтовые спуски. Высокая пиковая мощность.",
-        device: "Garmin / Strava"
+        notes: "Техничные подъёмы и грунтовые спуски в Сокольниках.",
+        device: "Garmin / Strava",
+        locationName: "Москва, Парк Сокольники",
+        coordinates: [
+          [55.7935, 37.6740], [55.7960, 37.6710], [55.7995, 37.6690], [55.8030, 37.6715],
+          [55.8060, 37.6760], [55.8080, 37.6820], [55.8075, 37.6885], [55.8045, 37.6930],
+          [55.8005, 37.6950], [55.7965, 37.6920], [55.7940, 37.6850], [55.7935, 37.6740]
+        ]
       },
       {
         id: "w-7",
@@ -576,7 +661,9 @@ class AppState {
         kudos: 12,
         isKudoed: false,
         notes: "Бёрпи, прыжки на тумбу, скакалка. Пиковый пульс доходил до 178 bpm.",
-        device: "Apple Watch Ultra 2"
+        device: "Apple Watch Ultra 2",
+        locationName: "Кроссфит зал",
+        coordinates: []
       }
     ];
   }
@@ -590,20 +677,17 @@ class AppState {
       return d.toISOString().split("T")[0];
     };
 
-    const mealPlans = [
-      // Today
+    return [
       { id: "m-1", date: today, name: "Овсяная каша с ягодами, бананом и семенами чиа", type: "breakfast", time: "08:45", cal: 440, protein: 16, fat: 12, carbs: 68 },
       { id: "m-2", date: today, name: "Куриное филе гриль с киноа и печёными овощами", type: "lunch", time: "13:30", cal: 620, protein: 52, fat: 16, carbs: 64 },
       { id: "m-3", date: today, name: "Протеиновый смузи с миндальным молоком", type: "snack", time: "16:45", cal: 260, protein: 28, fat: 6, carbs: 22 },
       { id: "m-4", date: today, name: "Филе лосося на пару с зелёной спаржей и бататом", type: "dinner", time: "19:40", cal: 600, protein: 44, fat: 22, carbs: 54 },
 
-      // Yesterday
       { id: "m-5", date: getDate(1), name: "Омлет из 3 яиц с авокадо и цельнозерновым тостом", type: "breakfast", time: "08:30", cal: 480, protein: 26, fat: 24, carbs: 38 },
       { id: "m-6", date: getDate(1), name: "Индейка су-вид с бурым рисом и салатом", type: "lunch", time: "13:15", cal: 590, protein: 48, fat: 14, carbs: 65 },
       { id: "m-7", date: getDate(1), name: "Греческий йогурт 2% с грецкими орехами и мёдом", type: "snack", time: "17:00", cal: 240, protein: 18, fat: 10, carbs: 20 },
       { id: "m-8", date: getDate(1), name: "Паста из твёрдых сортов с креветками и шпинатом", type: "dinner", time: "20:00", cal: 580, protein: 42, fat: 14, carbs: 70 },
 
-      // Days 2..6
       { id: "m-9", date: getDate(2), name: "Сырники запечённые с ягодным соусом", type: "breakfast", time: "09:00", cal: 420, protein: 32, fat: 12, carbs: 46 },
       { id: "m-10", date: getDate(2), name: "Говядина тушёная с гречкой и маринованными огурцами", type: "lunch", time: "14:00", cal: 650, protein: 50, fat: 18, carbs: 70 },
       { id: "m-11", date: getDate(2), name: "Творог 5% с черникой", type: "dinner", time: "19:30", cal: 490, protein: 38, fat: 14, carbs: 48 },
@@ -624,11 +708,8 @@ class AppState {
       { id: "m-22", date: getDate(6), name: "Куриный суп с лапшой и яйцом", type: "lunch", time: "13:20", cal: 560, protein: 42, fat: 16, carbs: 60 },
       { id: "m-23", date: getDate(6), name: "Запечённая дорадо с лимоном и розмарином", type: "dinner", time: "19:40", cal: 510, protein: 45, fat: 18, carbs: 38 }
     ];
-
-    return mealPlans;
   }
 
-  // Restore everything to initial demo state
   restoreDemoData() {
     this.workouts = this.generateSeedWorkouts();
     this.meals = this.generateSeedMeals();
@@ -647,13 +728,31 @@ class StravaPulseApp {
     this.state = new AppState();
     this.charts = {};
 
+    // Leaflet Maps instances
+    this.worldMap = null;
+    this.worldMapTileLayer = null;
+    this.worldMapRoutesLayer = null;
+    this.userLocationMarker = null;
+
+    // Modal Route Builder state
+    this.modalRouteMap = null;
+    this.modalMapTileLayer = null;
+    this.currentModalRouteCoords = [];
+    this.modalPolyline = null;
+    this.modalStartMarker = null;
+    this.modalFinishMarker = null;
+    this.isLiveGpsActive = false;
+    this.liveGpsTimerInterval = null;
+    this.liveGpsSeconds = 0;
+    this.liveGpsWatchId = null;
+
     this.initTheme();
     this.initLanguage();
     this.initDomElements();
     this.bindEvents();
     this.initWatchSimulationClock();
 
-    // Render components
+    // Render initial views
     this.renderUserProfile();
     this.renderDashboard();
     this.renderWorkoutsFeed();
@@ -661,10 +760,34 @@ class StravaPulseApp {
     this.renderAIContext();
     this.renderChatMessages();
 
-    // Resize listener for charts & activity rings
+    // Resize listener
     window.addEventListener("resize", () => {
       this.drawActivityRings();
+      if (this.worldMap) this.worldMap.invalidateSize();
     });
+  }
+
+  // ------------------------------------------------------------------------
+  // HAVERSINE DISTANCE FORMULA
+  // ------------------------------------------------------------------------
+  calculateHaversineDistanceKm(coords) {
+    if (!coords || coords.length < 2) return 0;
+    let totalDist = 0;
+    const R = 6371; // Earth radius in km
+    for (let i = 0; i < coords.length - 1; i++) {
+      const lat1 = (coords[i][0] * Math.PI) / 180;
+      const lon1 = (coords[i][1] * Math.PI) / 180;
+      const lat2 = (coords[i + 1][0] * Math.PI) / 180;
+      const lon2 = (coords[i + 1][1] * Math.PI) / 180;
+      const dLat = lat2 - lat1;
+      const dLon = lon2 - lon1;
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      totalDist += R * c;
+    }
+    return Number(totalDist.toFixed(2));
   }
 
   // ------------------------------------------------------------------------
@@ -684,6 +807,7 @@ class StravaPulseApp {
     this.initTheme();
     this.updateChartsTheme();
     this.drawActivityRings();
+    this.updateMapTiles();
   }
 
   initLanguage() {
@@ -700,19 +824,20 @@ class StravaPulseApp {
     this.renderWorkoutsFeed();
     this.renderNutritionTab();
     this.renderAIContext();
+    if (this.state.currentTab === "map") {
+      this.renderWorldMapRoutes();
+    }
   }
 
   applyLanguage(lang) {
     const dict = I18N[lang];
     if (!dict) return;
 
-    // Update lang button label
     const langLabel = document.getElementById("langLabel");
     const langFlag = document.querySelector(".lang-flag");
     if (langLabel) langLabel.textContent = lang.toUpperCase();
     if (langFlag) langFlag.textContent = lang === "ru" ? "🇷🇺" : "🇺🇸";
 
-    // Update text content with data-i18n
     document.querySelectorAll("[data-i18n]").forEach((el) => {
       const key = el.getAttribute("data-i18n");
       if (dict[key]) {
@@ -720,7 +845,6 @@ class StravaPulseApp {
       }
     });
 
-    // Update placeholders with data-i18n-placeholder
     document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
       const key = el.getAttribute("data-i18n-placeholder");
       if (dict[key]) {
@@ -737,30 +861,25 @@ class StravaPulseApp {
   // DOM ELEMENTS & EVENT BINDINGS
   // ------------------------------------------------------------------------
   initDomElements() {
-    // Navigation
     this.sidebar = document.getElementById("sidebar");
     this.mobileMenuBtn = document.getElementById("mobileMenuBtn");
     this.mobileCloseBtn = document.getElementById("mobileCloseBtn");
     this.navItems = document.querySelectorAll(".nav-item, .mobile-nav-item");
 
-    // Modals
     this.workoutModal = document.getElementById("workoutModal");
     this.mealModal = document.getElementById("mealModal");
     this.appleSyncModal = document.getElementById("appleSyncModal");
     this.settingsModal = document.getElementById("settingsModal");
 
-    // Forms
     this.workoutForm = document.getElementById("workoutForm");
     this.mealForm = document.getElementById("mealForm");
     this.settingsForm = document.getElementById("settingsForm");
     this.coachChatForm = document.getElementById("coachChatForm");
 
-    // Search and filters
     this.workoutSearchInput = document.getElementById("workoutSearchInput");
     this.workoutSportFilter = document.getElementById("workoutSportFilter");
     this.workoutSortFilter = document.getElementById("workoutSortFilter");
 
-    // Dropzone
     this.csvDropzone = document.getElementById("csvDropzone");
     this.csvFileInput = document.getElementById("csvFileInput");
   }
@@ -780,7 +899,7 @@ class StravaPulseApp {
 
     // Navigation switching
     this.navItems.forEach((btn) => {
-      btn.addEventListener("click", (e) => {
+      btn.addEventListener("click", () => {
         const tab = btn.getAttribute("data-tab");
         if (tab) this.switchTab(tab);
       });
@@ -795,6 +914,33 @@ class StravaPulseApp {
         this.renderDashboard();
       });
     });
+
+    // Quick open World Map from dashboard banner
+    document.getElementById("openWorldMapFromDashBtn")?.addEventListener("click", () => {
+      this.switchTab("map");
+    });
+
+    // Map tab controls
+    document.querySelectorAll(".map-filter-pill").forEach((pill) => {
+      pill.addEventListener("click", () => {
+        document.querySelectorAll(".map-filter-pill").forEach((p) => p.classList.remove("active"));
+        pill.classList.add("active");
+        const sport = pill.getAttribute("data-sport") || "all";
+        this.renderWorldMapRoutes(sport);
+      });
+    });
+
+    document.getElementById("mapRouteSelect")?.addEventListener("change", (e) => {
+      const id = e.target.value;
+      if (id === "all") {
+        this.fitAllMapRoutes();
+      } else {
+        this.focusOnWorkoutRoute(id);
+      }
+    });
+
+    document.getElementById("btnLocateMe")?.addEventListener("click", () => this.locateUserOnMap());
+    document.getElementById("btnFitAllRoutes")?.addEventListener("click", () => this.fitAllMapRoutes());
 
     // Open Workout Modal
     const openAddWorkout = () => this.openWorkoutModal();
@@ -812,6 +958,11 @@ class StravaPulseApp {
     ["workoutDurationInput", "workoutDistanceInput", "workoutTypeInput"].forEach((id) => {
       document.getElementById(id)?.addEventListener("input", () => this.updateWorkoutPacePreview());
     });
+
+    // Route Builder actions in workout modal
+    document.getElementById("clearRouteBtn")?.addEventListener("click", () => this.clearModalRoute());
+    document.getElementById("presetRouteBtn")?.addEventListener("click", () => this.applyPresetRoute());
+    document.getElementById("liveGpsRecordBtn")?.addEventListener("click", () => this.toggleLiveGpsRecording());
 
     // Workouts Feed Search & Filtering
     this.workoutSearchInput?.addEventListener("input", () => this.renderWorkoutsFeed());
@@ -850,7 +1001,7 @@ class StravaPulseApp {
     document.getElementById("cancelSettingsBtn")?.addEventListener("click", () => this.closeSettingsModal());
     this.settingsForm?.addEventListener("submit", (e) => this.handleSettingsSubmit(e));
     document.getElementById("resetDemoDataBtn")?.addEventListener("click", () => {
-      if (confirm("Вы уверены, что хотите восстановить исходные демонстрационные тренировки и питание?")) {
+      if (confirm("Вы уверены, что хотите восстановить исходные демонстрационные тренировки, GPS-маршруты и питание?")) {
         this.state.restoreDemoData();
         this.closeSettingsModal();
         this.renderUserProfile();
@@ -858,6 +1009,7 @@ class StravaPulseApp {
         this.renderWorkoutsFeed();
         this.renderNutritionTab();
         this.renderAIContext();
+        if (this.worldMap) this.renderWorldMapRoutes();
         this.showToast(this.t("demoRestoredToast"), "info");
       }
     });
@@ -935,22 +1087,20 @@ class StravaPulseApp {
     this.state.currentTab = tabId;
     this.sidebar.classList.remove("mobile-open");
 
-    // Update active nav button
     this.navItems.forEach((btn) => {
       btn.classList.toggle("active", btn.getAttribute("data-tab") === tabId);
     });
 
-    // Update pane
     document.querySelectorAll(".tab-pane").forEach((pane) => {
       pane.classList.remove("active");
     });
     const targetPane = document.getElementById(`tab-${tabId}`);
     if (targetPane) targetPane.classList.add("active");
 
-    // Update header title
     const titles = {
       dashboard: { title: "titleDashboard", sub: "subtitleDashboard" },
       workouts: { title: "navWorkouts", sub: "subtitleDashboard" },
+      map: { title: "titleMap", sub: "subtitleMap" },
       nutrition: { title: "navNutrition", sub: "dailyMacrosTitle" },
       sync: { title: "navSync", sub: "appleSyncHeroTitle" },
       coach: { title: "navCoach", sub: "coachOnlineStatus" }
@@ -961,11 +1111,12 @@ class StravaPulseApp {
     if (pageTitle) pageTitle.textContent = this.t(tInfo.title);
     if (pageSubtitle) pageSubtitle.textContent = this.t(tInfo.sub);
 
-    // Refresh tab specifics
     if (tabId === "dashboard") {
       this.renderDashboard();
     } else if (tabId === "workouts") {
       this.renderWorkoutsFeed();
+    } else if (tabId === "map") {
+      this.renderWorldMapTab();
     } else if (tabId === "nutrition") {
       this.renderNutritionTab();
     } else if (tabId === "coach") {
@@ -974,43 +1125,512 @@ class StravaPulseApp {
   }
 
   // ------------------------------------------------------------------------
-  // ATHLETE PROFILE & UI COUNTERS
+  // LEAFLET WORLD MAP ENGINE (STRAVA STYLE)
   // ------------------------------------------------------------------------
-  renderUserProfile() {
-    const s = this.state.settings;
-    const nameDisplay = document.getElementById("profileNameDisplay");
-    const levelDisplay = document.getElementById("profileLevelDisplay");
-    const welcomeName = document.getElementById("welcomeUserName");
+  initWorldMap() {
+    if (this.worldMap || typeof L === "undefined") return;
 
-    if (nameDisplay) nameDisplay.textContent = s.athleteName;
-    if (welcomeName) welcomeName.textContent = s.athleteName.split(" ")[0];
+    const mapEl = document.getElementById("worldMap");
+    if (!mapEl) return;
 
-    const goalLabels = {
-      endurance: this.state.currentLang === "ru" ? "🏃 Выносливость" : "🏃 Endurance",
-      fatloss: this.state.currentLang === "ru" ? "🔥 Рельеф" : "🔥 Fat Loss",
-      muscle: this.state.currentLang === "ru" ? "🏋️ Сила & Мышцы" : "🏋️ Strength",
-      maintenance: this.state.currentLang === "ru" ? "⚡ Здоровье" : "⚡ Tone"
-    };
+    this.worldMap = L.map("worldMap", {
+      center: [55.72, 37.55],
+      zoom: 12,
+      zoomControl: true,
+      attributionControl: true
+    });
 
-    if (levelDisplay) {
-      levelDisplay.textContent = `${goalLabels[s.fitnessGoal] || "🏃 Атлет"} • ${s.weight} кг`;
+    const isDark = this.state.currentTheme === "dark";
+    const tileUrl = isDark
+      ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+      : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+
+    this.worldMapTileLayer = L.tileLayer(tileUrl, {
+      maxZoom: 19,
+      subdomains: "abcd",
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+    }).addTo(this.worldMap);
+
+    this.worldMapRoutesLayer = L.layerGroup().addTo(this.worldMap);
+  }
+
+  updateMapTiles() {
+    if (!this.worldMap || typeof L === "undefined") return;
+
+    const isDark = this.state.currentTheme === "dark";
+    const tileUrl = isDark
+      ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+      : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+
+    if (this.worldMapTileLayer) {
+      this.worldMap.removeLayer(this.worldMapTileLayer);
     }
+    this.worldMapTileLayer = L.tileLayer(tileUrl, {
+      maxZoom: 19,
+      subdomains: "abcd",
+      attribution: '&copy; OpenStreetMap &copy; CARTO'
+    }).addTo(this.worldMap);
 
-    // Workouts count badge
-    const badge = document.getElementById("workoutsCountBadge");
-    if (badge) badge.textContent = this.state.workouts.length;
-
-    // Nutrition today badge
-    const calBadge = document.getElementById("calTodayBadge");
-    if (calBadge) {
-      const todayMeals = this.state.meals.filter((m) => m.date === this.state.getTodayIsoDate());
-      const sumCal = todayMeals.reduce((acc, m) => acc + (Number(m.cal) || 0), 0);
-      calBadge.textContent = `${sumCal} ${this.t("unitKcal")}`;
+    // Update modal mini-map tile layer if initialized
+    if (this.modalRouteMap && this.modalMapTileLayer) {
+      this.modalRouteMap.removeLayer(this.modalMapTileLayer);
+      this.modalMapTileLayer = L.tileLayer(tileUrl, { maxZoom: 19, subdomains: "abcd" }).addTo(this.modalRouteMap);
     }
   }
 
+  renderWorldMapTab() {
+    if (!this.worldMap) {
+      this.initWorldMap();
+    }
+    setTimeout(() => {
+      if (this.worldMap) {
+        this.worldMap.invalidateSize();
+        this.renderWorldMapRoutes();
+      }
+    }, 200);
+  }
+
+  renderWorldMapRoutes(sportFilter = "all") {
+    if (!this.worldMap || !this.worldMapRoutesLayer) return;
+
+    this.worldMapRoutesLayer.clearLayers();
+
+    let mappedWorkouts = this.state.workouts.filter(
+      (w) => w.coordinates && Array.isArray(w.coordinates) && w.coordinates.length > 1
+    );
+
+    if (sportFilter !== "all") {
+      mappedWorkouts = mappedWorkouts.filter((w) => w.type.toLowerCase() === sportFilter.toLowerCase());
+    }
+
+    const allBounds = L.latLngBounds();
+    let totalGpsDist = 0;
+    const locationsSet = new Set();
+
+    // Populate dropdown
+    const selectEl = document.getElementById("mapRouteSelect");
+    if (selectEl) {
+      let optHtml = `<option value="all">🗺️ Все маршруты на карте (${mappedWorkouts.length})</option>`;
+      mappedWorkouts.forEach((w) => {
+        optHtml += `<option value="${w.id}">${w.type === "Run" ? "🏃" : w.type === "Ride" ? "🚴" : "⚡"} ${w.title} (${w.distance || 0} км)</option>`;
+      });
+      selectEl.innerHTML = optHtml;
+    }
+
+    // Populate route drawer cards
+    const drawerRow = document.getElementById("drawerCardsRow");
+    const drawerCount = document.getElementById("drawerRoutesCount");
+    if (drawerCount) drawerCount.textContent = mappedWorkouts.length;
+
+    if (drawerRow) {
+      drawerRow.innerHTML = mappedWorkouts
+        .map(
+          (w) => `
+          <div class="drawer-route-card" data-route-id="${w.id}">
+            <span class="drawer-route-title">${this.escapeHtml(w.title)}</span>
+            <div class="drawer-route-meta">
+              <span>${w.type} • ${w.duration} мин</span>
+              <strong>${w.distance ? Number(w.distance).toFixed(2) : "0.00"} км</strong>
+            </div>
+          </div>
+        `
+        )
+        .join("");
+
+      drawerRow.querySelectorAll(".drawer-route-card").forEach((card) => {
+        card.addEventListener("click", () => {
+          const id = card.getAttribute("data-route-id");
+          this.focusOnWorkoutRoute(id);
+        });
+      });
+    }
+
+    // Draw polylines and markers on Leaflet map
+    mappedWorkouts.forEach((w) => {
+      totalGpsDist += Number(w.distance) || 0;
+      if (w.locationName) locationsSet.add(w.locationName);
+
+      const latlngs = w.coordinates;
+      const polyline = L.polyline(latlngs, {
+        color: "#FC4C02",
+        weight: 5,
+        opacity: 0.9,
+        lineJoin: "round",
+        lineCap: "round"
+      });
+
+      // Hover glow effect
+      polyline.on("mouseover", () => {
+        polyline.setStyle({ weight: 7, opacity: 1, color: "#FF7A00" });
+      });
+      polyline.on("mouseout", () => {
+        polyline.setStyle({ weight: 5, opacity: 0.9, color: "#FC4C02" });
+      });
+
+      // Custom Start and Finish Markers
+      const startCoord = latlngs[0];
+      const finishCoord = latlngs[latlngs.length - 1];
+
+      const startIcon = L.divIcon({
+        className: "custom-pin pin-start",
+        html: `<i class="fa-solid fa-play"></i>`,
+        iconSize: [26, 26],
+        iconAnchor: [13, 13]
+      });
+
+      const finishIcon = L.divIcon({
+        className: "custom-pin pin-finish",
+        html: `<i class="fa-solid fa-flag-checkered"></i>`,
+        iconSize: [26, 26],
+        iconAnchor: [13, 13]
+      });
+
+      const startMarker = L.marker(startCoord, { icon: startIcon });
+      const finishMarker = L.marker(finishCoord, { icon: finishIcon });
+
+      // Interactive Popup
+      const d = new Date(w.date);
+      const dateStr = d.toLocaleDateString(this.state.currentLang === "ru" ? "ru-RU" : "en-US", {
+        day: "numeric",
+        month: "short"
+      });
+      const paceVal = w.type === "Ride" ? this.formatSpeed(w.distance, w.duration) : this.formatPace(w.distance, w.duration);
+
+      const popupHtml = `
+        <div class="strava-popup-card">
+          <div class="popup-header">
+            <div>
+              <h4 class="popup-title">${this.escapeHtml(w.title)}</h4>
+              <span class="popup-date">${dateStr} • ${w.type}</span>
+            </div>
+          </div>
+          <div class="popup-stats-grid">
+            <div class="popup-stat-col">
+              <span>Дистанция</span>
+              <strong>${w.distance ? Number(w.distance).toFixed(2) : "0.00"} км</strong>
+            </div>
+            <div class="popup-stat-col">
+              <span>${w.type === "Ride" ? "Скорость" : "Темп"}</span>
+              <strong>${paceVal}</strong>
+            </div>
+            <div class="popup-stat-col">
+              <span>Пульс</span>
+              <strong class="text-fire">${w.heartRate || "—"} bpm</strong>
+            </div>
+          </div>
+          <button class="popup-btn-focus" onclick="window.stravaPulseApp.focusOnWorkoutRoute('${w.id}')">
+            🔍 Приблизить трек
+          </button>
+        </div>
+      `;
+
+      polyline.bindPopup(popupHtml);
+      startMarker.bindPopup(popupHtml);
+      finishMarker.bindPopup(popupHtml);
+
+      this.worldMapRoutesLayer.addLayer(polyline);
+      this.worldMapRoutesLayer.addLayer(startMarker);
+      this.worldMapRoutesLayer.addLayer(finishMarker);
+
+      latlngs.forEach((coord) => allBounds.extend(coord));
+    });
+
+    // Update floating telemetry HUD
+    const countEl = document.getElementById("mapStatTracksCount");
+    const kmEl = document.getElementById("mapStatKm");
+    const locEl = document.getElementById("mapStatLocations");
+
+    if (countEl) countEl.textContent = mappedWorkouts.length;
+    if (kmEl) kmEl.textContent = `${totalGpsDist.toFixed(1)} км`;
+    if (locEl) {
+      locEl.textContent = locationsSet.size > 0 ? Array.from(locationsSet).slice(0, 2).join(" • ") : "Лужники • Парк Горького";
+    }
+
+    // Fit map bounds
+    if (mappedWorkouts.length > 0 && allBounds.isValid()) {
+      this.worldMap.fitBounds(allBounds, { padding: [50, 50], maxZoom: 14 });
+    }
+  }
+
+  fitAllMapRoutes() {
+    if (!this.worldMap) return;
+    const mapped = this.state.workouts.filter((w) => w.coordinates && w.coordinates.length > 1);
+    if (mapped.length === 0) return;
+
+    const bounds = L.latLngBounds();
+    mapped.forEach((w) => {
+      w.coordinates.forEach((pt) => bounds.extend(pt));
+    });
+
+    if (bounds.isValid()) {
+      this.worldMap.flyToBounds(bounds, { padding: [60, 60], duration: 1.2 });
+    }
+  }
+
+  focusOnWorkoutRoute(workoutId) {
+    const workout = this.state.workouts.find((w) => w.id === workoutId);
+    if (!workout || !workout.coordinates || workout.coordinates.length < 2) return;
+
+    if (this.state.currentTab !== "map") {
+      this.switchTab("map");
+    }
+
+    setTimeout(() => {
+      if (!this.worldMap) return;
+      const bounds = L.latLngBounds(workout.coordinates);
+      this.worldMap.flyToBounds(bounds, { padding: [80, 80], duration: 1.2, maxZoom: 15 });
+
+      // Highlight route card in drawer
+      document.querySelectorAll(".drawer-route-card").forEach((card) => {
+        card.classList.toggle("active", card.getAttribute("data-route-id") === workoutId);
+      });
+    }, 250);
+  }
+
+  locateUserOnMap() {
+    if (!navigator.geolocation) {
+      this.showToast("Геолокация не поддерживается вашим браузером", "error");
+      return;
+    }
+
+    this.showToast("Поиск вашего местоположения...", "info");
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+
+        if (this.worldMap) {
+          if (this.userLocationMarker) {
+            this.worldMap.removeLayer(this.userLocationMarker);
+          }
+
+          const userIcon = L.divIcon({
+            className: "pin-user-location",
+            html: "",
+            iconSize: [18, 18],
+            iconAnchor: [9, 9]
+          });
+
+          this.userLocationMarker = L.marker([lat, lng], { icon: userIcon })
+            .addTo(this.worldMap)
+            .bindPopup("<b>📍 Ваша текущая геопозиция</b>")
+            .openPopup();
+
+          this.worldMap.flyTo([lat, lng], 15, { duration: 1.5 });
+          this.showToast(this.t("gpsLocatedToast"), "success");
+        }
+      },
+      (err) => {
+        this.showToast("Не удалось получить геопозицию. Проверьте разрешения браузера.", "error");
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  }
+
   // ------------------------------------------------------------------------
-  // DASHBOARD & METRICS
+  // MODAL ROUTE BUILDER (LEAFLET MINI-MAP)
+  // ------------------------------------------------------------------------
+  setupModalRouteMap() {
+    if (typeof L === "undefined") return;
+
+    const mapContainer = document.getElementById("modalRouteMap");
+    if (!mapContainer) return;
+
+    if (!this.modalRouteMap) {
+      this.modalRouteMap = L.map("modalRouteMap", {
+        center: [55.718, 37.553],
+        zoom: 13,
+        zoomControl: true,
+        attributionControl: false
+      });
+
+      const isDark = this.state.currentTheme === "dark";
+      const tileUrl = isDark
+        ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+
+      this.modalMapTileLayer = L.tileLayer(tileUrl, { maxZoom: 19, subdomains: "abcd" }).addTo(this.modalRouteMap);
+
+      // Map click handler: User draws route point by point!
+      this.modalRouteMap.on("click", (e) => {
+        const pt = [Number(e.latlng.lat.toFixed(5)), Number(e.latlng.lng.toFixed(5))];
+        this.currentModalRouteCoords.push(pt);
+        this.refreshModalRouteDisplay();
+      });
+    }
+
+    setTimeout(() => {
+      if (this.modalRouteMap) {
+        this.modalRouteMap.invalidateSize();
+        this.refreshModalRouteDisplay();
+      }
+    }, 250);
+  }
+
+  refreshModalRouteDisplay() {
+    if (!this.modalRouteMap) return;
+
+    const coords = this.currentModalRouteCoords || [];
+
+    // Remove old layers
+    if (this.modalPolyline) this.modalRouteMap.removeLayer(this.modalPolyline);
+    if (this.modalStartMarker) this.modalRouteMap.removeLayer(this.modalStartMarker);
+    if (this.modalFinishMarker) this.modalRouteMap.removeLayer(this.modalFinishMarker);
+
+    const pointsCountEl = document.getElementById("builderPointsCount");
+    const distCalcEl = document.getElementById("builderDistCalc");
+
+    if (coords.length > 0) {
+      this.modalPolyline = L.polyline(coords, {
+        color: "#FC4C02",
+        weight: 5,
+        opacity: 0.95
+      }).addTo(this.modalRouteMap);
+
+      // Start pin
+      const startIcon = L.divIcon({
+        className: "custom-pin pin-start",
+        html: `<i class="fa-solid fa-play"></i>`,
+        iconSize: [22, 22],
+        iconAnchor: [11, 11]
+      });
+      this.modalStartMarker = L.marker(coords[0], { icon: startIcon }).addTo(this.modalRouteMap);
+
+      // Finish pin
+      if (coords.length > 1) {
+        const finishIcon = L.divIcon({
+          className: "custom-pin pin-finish",
+          html: `<i class="fa-solid fa-flag-checkered"></i>`,
+          iconSize: [22, 22],
+          iconAnchor: [11, 11]
+        });
+        this.modalFinishMarker = L.marker(coords[coords.length - 1], { icon: finishIcon }).addTo(this.modalRouteMap);
+      }
+
+      // Calculate distance with Haversine
+      const distKm = this.calculateHaversineDistanceKm(coords);
+
+      if (pointsCountEl) pointsCountEl.textContent = `${coords.length} точек`;
+      if (distCalcEl) distCalcEl.textContent = `${distKm.toFixed(2)} км`;
+
+      // Update distance input automatically!
+      const distInput = document.getElementById("workoutDistanceInput");
+      if (distInput && distKm > 0) {
+        distInput.value = distKm.toFixed(2);
+        this.updateWorkoutPacePreview();
+      }
+
+      const bounds = L.latLngBounds(coords);
+      if (bounds.isValid()) {
+        this.modalRouteMap.fitBounds(bounds, { padding: [30, 30], maxZoom: 15 });
+      }
+    } else {
+      if (pointsCountEl) pointsCountEl.textContent = "0 точек";
+      if (distCalcEl) distCalcEl.textContent = "0.00 км";
+    }
+  }
+
+  clearModalRoute() {
+    this.stopLiveGpsRecording();
+    this.currentModalRouteCoords = [];
+    this.refreshModalRouteDisplay();
+    const distInput = document.getElementById("workoutDistanceInput");
+    if (distInput) {
+      distInput.value = "0.00";
+      this.updateWorkoutPacePreview();
+    }
+    this.showToast("Маршрут очищен. Кликните по карте для рисования нового.", "info");
+  }
+
+  applyPresetRoute() {
+    // Scenic Luzhniki Stadium / Embankment 5.4 km loop
+    this.currentModalRouteCoords = [
+      [55.7155, 37.5535], [55.7162, 37.5502], [55.7178, 37.5460], [55.7198, 37.5442],
+      [55.7225, 37.5458], [55.7251, 37.5492], [55.7275, 37.5540], [55.7288, 37.5595],
+      [55.7282, 37.5655], [55.7260, 37.5702], [55.7228, 37.5728], [55.7195, 37.5710],
+      [55.7168, 37.5662], [55.7150, 37.5605], [55.7155, 37.5535]
+    ];
+    this.refreshModalRouteDisplay();
+    this.showToast("Загружен шаблон маршрута в Лужниках!", "success");
+  }
+
+  toggleLiveGpsRecording() {
+    if (this.isLiveGpsActive) {
+      this.stopLiveGpsRecording();
+    } else {
+      this.startLiveGpsRecording();
+    }
+  }
+
+  startLiveGpsRecording() {
+    this.isLiveGpsActive = true;
+    this.liveGpsSeconds = 0;
+
+    const btn = document.getElementById("liveGpsRecordBtn");
+    const overlay = document.getElementById("liveGpsOverlay");
+    if (btn) {
+      btn.className = "btn btn-sm btn-primary pulse-shadow";
+      btn.innerHTML = `<i class="fa-solid fa-stop"></i> <span>Стоп GPS</span>`;
+    }
+    if (overlay) overlay.classList.remove("hidden");
+
+    this.showToast(this.t("gpsLiveStartedToast"), "info");
+
+    // Simulation track points around scenic park
+    const simBase = [
+      [55.7200, 37.5480], [55.7210, 37.5495], [55.7225, 37.5515], [55.7240, 37.5540],
+      [55.7255, 37.5565], [55.7265, 37.5590], [55.7270, 37.5615], [55.7265, 37.5640],
+      [55.7250, 37.5665], [55.7230, 37.5680], [55.7210, 37.5685], [55.7190, 37.5670],
+      [55.7175, 37.5645], [55.7165, 37.5615], [55.7160, 37.5580], [55.7165, 37.5540],
+      [55.7175, 37.5510], [55.7188, 37.5490], [55.7200, 37.5480]
+    ];
+
+    let simIdx = 0;
+    this.currentModalRouteCoords = [simBase[0]];
+
+    this.liveGpsTimerInterval = setInterval(() => {
+      this.liveGpsSeconds += 1;
+      const mins = Math.floor(this.liveGpsSeconds / 60);
+      const secs = this.liveGpsSeconds % 60;
+      const timeStr = `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+
+      // Append step
+      simIdx = (simIdx + 1) % simBase.length;
+      this.currentModalRouteCoords.push(simBase[simIdx]);
+      this.refreshModalRouteDisplay();
+
+      const distKm = this.calculateHaversineDistanceKm(this.currentModalRouteCoords);
+      const distEl = document.getElementById("liveGpsDist");
+      const timeEl = document.getElementById("liveGpsTime");
+      const paceEl = document.getElementById("liveGpsPace");
+
+      if (timeEl) timeEl.textContent = timeStr;
+      if (distEl) distEl.textContent = `${distKm.toFixed(2)} км`;
+      if (paceEl) paceEl.textContent = "4:55 /км";
+    }, 1000);
+  }
+
+  stopLiveGpsRecording() {
+    this.isLiveGpsActive = false;
+    if (this.liveGpsTimerInterval) {
+      clearInterval(this.liveGpsTimerInterval);
+      this.liveGpsTimerInterval = null;
+    }
+
+    const btn = document.getElementById("liveGpsRecordBtn");
+    const overlay = document.getElementById("liveGpsOverlay");
+    if (btn) {
+      btn.className = "btn btn-sm btn-outline";
+      btn.innerHTML = `<i class="fa-solid fa-satellite-dish"></i> <span>${this.t("btnLiveGps")}</span>`;
+    }
+    if (overlay) overlay.classList.add("hidden");
+
+    this.showToast(this.t("gpsLiveStoppedToast"), "success");
+  }
+
+  // ------------------------------------------------------------------------
+  // DASHBOARD & CHARTS
   // ------------------------------------------------------------------------
   getFilteredWorkoutsByTimeframe() {
     const tf = this.state.dashboardTimeframe;
@@ -1025,7 +1645,6 @@ class StravaPulseApp {
   renderDashboard() {
     const workouts = this.getFilteredWorkoutsByTimeframe();
 
-    // Sum KPIs
     let totalDist = 0;
     let totalCal = 0;
     let totalMin = 0;
@@ -1047,7 +1666,6 @@ class StravaPulseApp {
     const mins = totalMin % 60;
     const timeFormatted = `${hours}ч ${mins}м`;
 
-    // DOM update
     const distEl = document.getElementById("kpiDistance");
     const calEl = document.getElementById("kpiCalories");
     const timeEl = document.getElementById("kpiTime");
@@ -1061,14 +1679,18 @@ class StravaPulseApp {
     const timeSub = document.getElementById("kpiTimeSub");
     if (timeSub) timeSub.textContent = `${workouts.length} тренировок`;
 
-    // Render Apple Activity Rings & Charts
+    // Dashboard GPS highlight card numbers
+    const mapped = this.state.workouts.filter((w) => w.coordinates && w.coordinates.length > 1);
+    const mappedKm = mapped.reduce((a, b) => a + (Number(b.distance) || 0), 0);
+    const dashCount = document.getElementById("dashGpsTracksCount");
+    const dashDist = document.getElementById("dashGpsTotalDist");
+    if (dashCount) dashCount.textContent = `${mapped.length} треков с GPS`;
+    if (dashDist) dashDist.textContent = `${mappedKm.toFixed(1)} км на карте`;
+
     this.drawActivityRings();
     this.renderCharts(workouts);
   }
 
-  // ------------------------------------------------------------------------
-  // APPLE FITNESS STYLE ACTIVITY RINGS (CANVAS)
-  // ------------------------------------------------------------------------
   drawActivityRings() {
     const canvas = document.getElementById("ringsCanvas");
     if (!canvas) return;
@@ -1078,7 +1700,6 @@ class StravaPulseApp {
     const centerX = width / 2;
     const centerY = height / 2;
 
-    // Calculate today's values
     const today = this.state.getTodayIsoDate();
     const todayWorkouts = this.state.workouts.filter((w) => w.date.startsWith(today));
     const todayBurned = todayWorkouts.reduce((sum, w) => sum + (Number(w.calories) || 0), 0);
@@ -1089,7 +1710,6 @@ class StravaPulseApp {
     const exerciseGoal = 45;
     const waterGoal = this.state.settings.dailyWaterGoal || 2500;
 
-    // Update ring stat numbers in card
     const moveVal = document.getElementById("ringMoveVal");
     const moveGoalEl = document.getElementById("ringMoveGoal");
     const exVal = document.getElementById("ringExerciseVal");
@@ -1113,12 +1733,10 @@ class StravaPulseApp {
     const isDark = this.state.currentTheme === "dark";
     const bgTrackAlpha = isDark ? 0.15 : 0.2;
 
-    // Helper to draw a single ring
     const drawRing = (radius, strokeWidth, progress, colorHex, trackAlpha) => {
       const startAngle = -0.5 * Math.PI;
       const endAngle = startAngle + progress * 2 * Math.PI;
 
-      // Background Track
       ctx.beginPath();
       ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
       ctx.strokeStyle = colorHex;
@@ -1127,7 +1745,6 @@ class StravaPulseApp {
       ctx.lineCap = "round";
       ctx.stroke();
 
-      // Active Arc
       if (progress > 0) {
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, startAngle, endAngle);
@@ -1139,21 +1756,13 @@ class StravaPulseApp {
       }
     };
 
-    // Outer Ring: Move (Apple Red/Pink #FF2D55)
     drawRing(72, 13, moveProgress, "#FF2D55", bgTrackAlpha);
-
-    // Middle Ring: Exercise (Apple Green #30D158)
     drawRing(54, 13, exProgress, "#30D158", bgTrackAlpha);
-
-    // Inner Ring: Stand/Water (Apple Cyan #00E5FF)
     drawRing(36, 13, waterProgress, "#00E5FF", bgTrackAlpha);
 
     ctx.globalAlpha = 1;
   }
 
-  // ------------------------------------------------------------------------
-  // CHART.JS INTEGRATION (4 DYNAMIC CHARTS)
-  // ------------------------------------------------------------------------
   getChartThemeColors() {
     const isDark = this.state.currentTheme === "dark";
     return {
@@ -1193,14 +1802,12 @@ class StravaPulseApp {
     this.renderMacrosChart();
   }
 
-  // Chart 1: Training Load & Distance (Dual Axis)
   renderTrainingLoadChart(workouts) {
     const canvas = document.getElementById("trainingLoadChart");
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     const colors = this.getChartThemeColors();
 
-    // Prepare last 7 days buckets
     const daysLabels = [];
     const distData = [];
     const minData = [];
@@ -1288,7 +1895,6 @@ class StravaPulseApp {
     });
   }
 
-  // Chart 2: Energy Balance (Consumed Food vs Burned in Workouts)
   renderEnergyBalanceChart() {
     const canvas = document.getElementById("energyBalanceChart");
     if (!canvas) return;
@@ -1307,12 +1913,10 @@ class StravaPulseApp {
       const weekdayName = d.toLocaleDateString(this.state.currentLang === "ru" ? "ru-RU" : "en-US", { weekday: "short" });
       daysLabels.push(weekdayName.toUpperCase());
 
-      // Meals sum
       const dayMeals = this.state.meals.filter((m) => m.date === iso);
       const foodKcal = dayMeals.reduce((sum, m) => sum + (Number(m.cal) || 0), 0);
       foodKcalData.push(foodKcal);
 
-      // Workouts sum
       const dayWorkouts = this.state.workouts.filter((w) => w.date.startsWith(iso));
       const burnedKcal = dayWorkouts.reduce((sum, w) => sum + (Number(w.calories) || 0), 0);
       burnedKcalData.push(burnedKcal);
@@ -1366,14 +1970,12 @@ class StravaPulseApp {
     });
   }
 
-  // Chart 3: Heart Rate & Pace Dynamics
   renderHrPaceChart(workouts) {
     const canvas = document.getElementById("hrPaceChart");
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     const colors = this.getChartThemeColors();
 
-    // Take recent 8 activities sorted asc by date
     const sorted = [...this.state.workouts].sort((a, b) => new Date(a.date) - new Date(b.date)).slice(-8);
 
     const labels = sorted.map((w) => {
@@ -1384,7 +1986,6 @@ class StravaPulseApp {
     const hrData = sorted.map((w) => w.heartRate || null);
     const speedData = sorted.map((w) => {
       if (!w.distance || !w.duration) return null;
-      // speed km/h
       return Number(((w.distance / (w.duration / 60))).toFixed(1));
     });
 
@@ -1455,7 +2056,6 @@ class StravaPulseApp {
     });
   }
 
-  // Chart 4: Macronutrients Doughnut & Breakdown
   renderMacrosChart() {
     const canvas = document.getElementById("macrosDoughnutChart");
     if (!canvas) return;
@@ -1478,7 +2078,6 @@ class StravaPulseApp {
     const fPct = Math.round((f / totalGrams) * 100);
     const cPct = Math.round((c / totalGrams) * 100);
 
-    // Render list breakdown
     const listEl = document.getElementById("macrosBreakdownList");
     if (listEl) {
       listEl.innerHTML = `
@@ -1593,7 +2192,6 @@ class StravaPulseApp {
         prs.maxCaloriesId = w.id;
       }
 
-      // Fastest pace for running
       if (w.type === "Run" && dist >= 3 && dur > 0) {
         const paceSec = (dur * 60) / dist;
         if (paceSec < bestPaceSec) {
@@ -1612,19 +2210,16 @@ class StravaPulseApp {
     const summaryPills = document.getElementById("feedSummaryPills");
     if (!container) return;
 
-    // Filters
     const searchQuery = (this.workoutSearchInput?.value || "").toLowerCase().trim();
     const sportFilter = this.workoutSportFilter?.value || "all";
     const sortFilter = this.workoutSortFilter?.value || "date-desc";
 
     let list = [...this.state.workouts];
 
-    // Filter by sport
     if (sportFilter !== "all") {
       list = list.filter((w) => w.type.toLowerCase() === sportFilter.toLowerCase());
     }
 
-    // Filter by search query
     if (searchQuery) {
       list = list.filter((w) => {
         const titleMatch = (w.title || "").toLowerCase().includes(searchQuery);
@@ -1633,7 +2228,6 @@ class StravaPulseApp {
       });
     }
 
-    // Sort
     list.sort((a, b) => {
       if (sortFilter === "date-desc") return new Date(b.date) - new Date(a.date);
       if (sortFilter === "date-asc") return new Date(a.date) - new Date(b.date);
@@ -1643,7 +2237,6 @@ class StravaPulseApp {
       return 0;
     });
 
-    // Summary pills
     if (summaryPills) {
       const sumDist = list.reduce((acc, w) => acc + (Number(w.distance) || 0), 0);
       const sumCal = list.reduce((acc, w) => acc + (Number(w.calories) || 0), 0);
@@ -1666,7 +2259,6 @@ class StravaPulseApp {
 
     const prs = this.calculatePersonalRecords();
 
-    // Render cards
     container.innerHTML = list
       .map((w) => {
         const d = new Date(w.date);
@@ -1678,7 +2270,6 @@ class StravaPulseApp {
           minute: "2-digit"
         });
 
-        // Pace or Speed metric
         let paceSpeedLabel = "ТЕМП";
         let paceSpeedVal = this.formatPace(w.distance, w.duration);
         if (w.type === "Ride") {
@@ -1686,7 +2277,6 @@ class StravaPulseApp {
           paceSpeedVal = this.formatSpeed(w.distance, w.duration);
         }
 
-        // PR detection
         const isMaxDist = prs.maxDistanceId === w.id;
         const isFastestPace = prs.fastestPaceId === w.id;
         const isMaxElev = prs.maxElevationId === w.id;
@@ -1698,7 +2288,6 @@ class StravaPulseApp {
         else if (isFastestPace) prLabel = "⚡ Рекордный темп";
         else if (isMaxElev) prLabel = "⛰️ Рекорд набора высоты";
 
-        // Sport icons
         const sportIcons = {
           Run: "fa-person-running",
           Ride: "fa-person-biking",
@@ -1708,6 +2297,7 @@ class StravaPulseApp {
           HIIT: "fa-bolt"
         };
         const sIcon = sportIcons[w.type] || "fa-person-running";
+        const hasGps = w.coordinates && Array.isArray(w.coordinates) && w.coordinates.length > 1;
 
         return `
           <div class="strava-card" data-workout-id="${w.id}">
@@ -1717,7 +2307,7 @@ class StravaPulseApp {
                 <div class="athlete-text">
                   <span class="athlete-name">${this.state.settings.athleteName}</span>
                   <span class="activity-time-stamp">
-                    <i class="fa-regular fa-clock"></i> ${dateStr}
+                    <i class="fa-regular fa-clock"></i> ${dateStr} ${w.locationName ? `• <i class="fa-solid fa-location-dot text-strava"></i> ${w.locationName}` : ""}
                   </span>
                 </div>
               </div>
@@ -1769,13 +2359,22 @@ class StravaPulseApp {
                 </div>
               </div>
 
-              <!-- Route Snippet / Visual Bar -->
-              <div class="activity-visual-track">
-                <svg viewBox="0 0 400 40" preserveAspectRatio="none">
-                  <path d="M 0,20 Q 50,5 100,22 T 200,12 T 300,28 T 400,15" fill="none" stroke="var(--strava-orange)" stroke-width="2.5" />
-                  <path d="M 0,20 Q 50,5 100,22 T 200,12 T 300,28 T 400,15 L 400,40 L 0,40 Z" fill="rgba(252,76,2,0.12)" />
-                </svg>
-              </div>
+              <!-- Mini-Map / Route Preview -->
+              ${hasGps ? `
+                <div class="feed-card-map-wrap">
+                  <div id="feedMap-${w.id}" class="feed-mini-map"></div>
+                  <button class="btn-open-in-world-map" onclick="window.stravaPulseApp.focusOnWorkoutRoute('${w.id}')">
+                    <i class="fa-solid fa-map-location-dot text-strava"></i> Показать на карте мира
+                  </button>
+                </div>
+              ` : `
+                <div class="activity-visual-track">
+                  <svg viewBox="0 0 400 40" preserveAspectRatio="none">
+                    <path d="M 0,20 Q 50,5 100,22 T 200,12 T 300,28 T 400,15" fill="none" stroke="var(--strava-orange)" stroke-width="2.5" />
+                    <path d="M 0,20 Q 50,5 100,22 T 200,12 T 300,28 T 400,15 L 400,40 L 0,40 Z" fill="rgba(252,76,2,0.12)" />
+                  </svg>
+                </div>
+              `}
             </div>
 
             <div class="strava-card-footer">
@@ -1794,7 +2393,48 @@ class StravaPulseApp {
       })
       .join("");
 
-    // Attach card action listeners
+    // Initialize mini-maps on feed cards
+    if (typeof L !== "undefined") {
+      setTimeout(() => {
+        list.forEach((w) => {
+          if (w.coordinates && Array.isArray(w.coordinates) && w.coordinates.length > 1) {
+            const mapEl = document.getElementById(`feedMap-${w.id}`);
+            if (mapEl && !mapEl._leaflet_id) {
+              const miniMap = L.map(`feedMap-${w.id}`, {
+                zoomControl: false,
+                dragging: false,
+                touchZoom: false,
+                doubleClickZoom: false,
+                scrollWheelZoom: false,
+                boxZoom: false,
+                keyboard: false,
+                attributionControl: false
+              });
+
+              const isDark = this.state.currentTheme === "dark";
+              const tileUrl = isDark
+                ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+
+              L.tileLayer(tileUrl, { maxZoom: 19, subdomains: "abcd" }).addTo(miniMap);
+
+              const pl = L.polyline(w.coordinates, {
+                color: "#FC4C02",
+                weight: 4,
+                opacity: 0.95
+              }).addTo(miniMap);
+
+              const bounds = L.latLngBounds(w.coordinates);
+              if (bounds.isValid()) {
+                miniMap.fitBounds(bounds, { padding: [16, 16] });
+              }
+            }
+          }
+        });
+      }, 150);
+    }
+
+    // Attach listeners
     container.querySelectorAll(".edit-workout-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         const id = btn.getAttribute("data-id");
@@ -1812,6 +2452,7 @@ class StravaPulseApp {
           this.renderWorkoutsFeed();
           this.renderDashboard();
           this.renderAIContext();
+          if (this.worldMap) this.renderWorldMapRoutes();
           this.showToast(this.t("workoutDeletedToast"), "error");
         }
       });
@@ -1857,12 +2498,12 @@ class StravaPulseApp {
       hrInput.value = workout.heartRate || "";
       elevInput.value = workout.elevation || "";
       notesInput.value = workout.notes || "";
+      this.currentModalRouteCoords = workout.coordinates ? [...workout.coordinates] : [];
     } else {
       if (titleEl) titleEl.textContent = this.t("modalAddWorkoutTitle");
       idInput.value = "";
       titleInput.value = "";
       typeInput.value = "Run";
-      // Default to now
       const now = new Date();
       now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
       dateInput.value = now.toISOString().slice(0, 16);
@@ -1872,13 +2513,16 @@ class StravaPulseApp {
       hrInput.value = "148";
       elevInput.value = "35";
       notesInput.value = "";
+      this.currentModalRouteCoords = [];
     }
 
     this.updateWorkoutPacePreview();
     this.workoutModal.classList.remove("hidden");
+    this.setupModalRouteMap();
   }
 
   closeWorkoutModal() {
+    this.stopLiveGpsRecording();
     this.workoutModal.classList.add("hidden");
   }
 
@@ -1909,9 +2553,9 @@ class StravaPulseApp {
     const heartRate = Number(document.getElementById("workoutHrInput").value) || null;
     const elevation = Number(document.getElementById("workoutElevationInput").value) || 0;
     const notes = document.getElementById("workoutNotesInput").value.trim();
+    const coords = this.currentModalRouteCoords ? [...this.currentModalRouteCoords] : [];
 
     if (id) {
-      // Edit
       const index = this.state.workouts.findIndex((w) => w.id === id);
       if (index !== -1) {
         this.state.workouts[index] = {
@@ -1924,11 +2568,11 @@ class StravaPulseApp {
           calories,
           heartRate,
           elevation,
-          notes
+          notes,
+          coordinates: coords
         };
       }
     } else {
-      // Create
       const newWorkout = {
         id: `w-${Date.now()}`,
         title,
@@ -1940,9 +2584,11 @@ class StravaPulseApp {
         heartRate,
         elevation,
         notes,
+        coordinates: coords,
         kudos: 0,
         isKudoed: false,
-        device: "StravaPulse Manual"
+        device: "StravaPulse GPS",
+        locationName: coords.length > 0 ? "GPS Маршрут" : "Спортивная площадка"
       };
       this.state.workouts.unshift(newWorkout);
     }
@@ -1953,6 +2599,7 @@ class StravaPulseApp {
     this.renderDashboard();
     this.renderUserProfile();
     this.renderAIContext();
+    if (this.worldMap) this.renderWorldMapRoutes();
     this.showToast(this.t("workoutSavedToast"), "success");
   }
 
@@ -1970,7 +2617,6 @@ class StravaPulseApp {
     const selectedDate = this.state.selectedNutritionDate;
     const today = this.state.getTodayIsoDate();
 
-    // Date display
     const dateDisplay = document.getElementById("nutDateDisplay");
     if (dateDisplay) {
       const d = new Date(selectedDate);
@@ -1982,10 +2628,8 @@ class StravaPulseApp {
       dateDisplay.textContent = isToday ? `${this.t("ringsToday")}, ${formatted}` : formatted;
     }
 
-    // Filter meals by selected date
     const dayMeals = this.state.meals.filter((m) => m.date === selectedDate);
 
-    // Sum Calories & Macros
     let totalCal = 0;
     let totalP = 0;
     let totalF = 0;
@@ -2004,14 +2648,12 @@ class StravaPulseApp {
       }
     });
 
-    // Workouts burned on this date
     const dayWorkouts = this.state.workouts.filter((w) => w.date.startsWith(selectedDate));
     const burnedToday = dayWorkouts.reduce((acc, w) => acc + (Number(w.calories) || 0), 0);
 
     const goalCal = this.state.settings.dailyCalGoal || 2400;
     const remaining = goalCal - totalCal + burnedToday;
 
-    // Update Hero elements
     const consumedEl = document.getElementById("nutConsumedTotal");
     const goalEl = document.getElementById("nutDailyGoal");
     const burnedEl = document.getElementById("nutBurnedToday");
@@ -2026,7 +2668,6 @@ class StravaPulseApp {
       remEl.innerHTML = `${isPositive ? "+" : ""}${remaining.toLocaleString()} <small>ккал</small>`;
     }
 
-    // Macro bars
     const pGoal = this.state.settings.proteinGoal || 150;
     const fGoal = this.state.settings.fatGoal || 70;
     const cGoal = this.state.settings.carbsGoal || 260;
@@ -2043,13 +2684,11 @@ class StravaPulseApp {
     document.getElementById("nutCarbsGoal") && (document.getElementById("nutCarbsGoal").textContent = cGoal);
     document.getElementById("nutCarbsBar") && (document.getElementById("nutCarbsBar").style.width = `${Math.min((totalC / cGoal) * 100, 100)}%`);
 
-    // Category calorie subtitles
     document.getElementById("catCalBreakfast") && (document.getElementById("catCalBreakfast").textContent = `${catSums.breakfast} ккал`);
     document.getElementById("catCalLunch") && (document.getElementById("catCalLunch").textContent = `${catSums.lunch} ккал`);
     document.getElementById("catCalDinner") && (document.getElementById("catCalDinner").textContent = `${catSums.dinner} ккал`);
     document.getElementById("catCalSnack") && (document.getElementById("catCalSnack").textContent = `${catSums.snack} ккал`);
 
-    // Render categorized meal lists
     ["breakfast", "lunch", "dinner", "snack"].forEach((type) => {
       const listEl = document.getElementById(`mealsList${type.charAt(0).toUpperCase() + type.slice(1)}`);
       if (!listEl) return;
@@ -2085,7 +2724,6 @@ class StravaPulseApp {
         .join("");
     });
 
-    // Attach listeners for meals edit/delete
     document.querySelectorAll(".edit-meal-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         const id = btn.getAttribute("data-id");
@@ -2108,7 +2746,6 @@ class StravaPulseApp {
       });
     });
 
-    // Render Water Tracker
     this.renderWaterTracker();
   }
 
@@ -2267,7 +2904,6 @@ class StravaPulseApp {
       document.getElementById("step4")
     ];
 
-    // Reset steps
     steps.forEach((s) => {
       if (s) {
         s.className = "sync-step-row";
@@ -2278,10 +2914,8 @@ class StravaPulseApp {
     const headline = document.getElementById("syncStatusHeadline");
     const sub = document.getElementById("syncStatusSub");
 
-    // Sequence simulation
     const runStep = (idx) => {
       if (idx >= steps.length) {
-        // Complete! Add fresh workouts
         setTimeout(() => {
           this.appleSyncModal.classList.add("hidden");
           this.injectAppleHealthWorkouts();
@@ -2311,7 +2945,7 @@ class StravaPulseApp {
         if (sub) sub.textContent = "Точки маршрута, ЧСС 1-секундный интервал, набор высоты";
       } else if (idx === 3) {
         if (headline) headline.textContent = "Интеграция в StravaPulse...";
-        if (sub) sub.textContent = "Пересчёт колец активности, темпа и недельной нагрузки";
+        if (sub) sub.textContent = "Пересчёт колец активности, темпа и GPS-карты";
       }
 
       setTimeout(() => runStep(idx + 1), 750);
@@ -2338,7 +2972,14 @@ class StravaPulseApp {
         kudos: 4,
         isKudoed: false,
         notes: "Синхронизировано из Apple HealthKit. Точный оптический датчик пульса Apple Watch, средний каденс 174 spm.",
-        device: "Apple Watch Ultra 2 (HealthKit)"
+        device: "Apple Watch Ultra 2 (HealthKit)",
+        locationName: "New York, Central Park",
+        coordinates: [
+          [40.7850, -73.9682], [40.7872, -73.9655], [40.7895, -73.9630], [40.7920, -73.9605],
+          [40.7950, -73.9580], [40.7985, -73.9560], [40.8005, -73.9585], [40.7980, -73.9620],
+          [40.7940, -73.9670], [40.7900, -73.9715], [40.7865, -73.9740], [40.7830, -73.9730],
+          [40.7815, -73.9700], [40.7850, -73.9682]
+        ]
       },
       {
         id: `apple-w-${Date.now()}-2`,
@@ -2353,11 +2994,13 @@ class StravaPulseApp {
         kudos: 7,
         isKudoed: false,
         notes: "Интервальная нагрузка с Apple Watch. Пиковый пульс 176 bpm, зона 4-5.",
-        device: "Apple Watch Series 9"
+        device: "Apple Watch Series 9",
+        locationName: "Фитнес-клуб",
+        coordinates: []
       },
       {
         id: `apple-w-${Date.now()}-3`,
-        title: "Apple Watch: Велосипедная прогулка в Лужниках",
+        title: "Apple Watch: Заезд по набережной Odaiba",
         type: "Ride",
         date: new Date(now.getTime() - 48 * 3600 * 1000).toISOString(),
         duration: 62,
@@ -2368,7 +3011,13 @@ class StravaPulseApp {
         kudos: 8,
         isKudoed: true,
         notes: "GPS трек с высотомером Apple Watch. Отличная аэробная работа.",
-        device: "Apple Watch Ultra 2"
+        device: "Apple Watch Ultra 2",
+        locationName: "Tokyo, Odaiba Waterfront",
+        coordinates: [
+          [35.6320, 139.7750], [35.6355, 139.7790], [35.6390, 139.7840], [35.6425, 139.7890],
+          [35.6460, 139.7925], [35.6490, 139.7910], [35.6480, 139.7845], [35.6440, 139.7780],
+          [35.6395, 139.7730], [35.6350, 139.7710], [35.6320, 139.7750]
+        ]
       }
     ];
 
@@ -2378,10 +3027,11 @@ class StravaPulseApp {
     this.renderDashboard();
     this.renderUserProfile();
     this.renderAIContext();
+    if (this.worldMap) this.renderWorldMapRoutes();
   }
 
   // ------------------------------------------------------------------------
-  // CSV / XML IMPORT & EXPORT
+  // CSV / GPX / XML IMPORT & EXPORT
   // ------------------------------------------------------------------------
   setupDropzone() {
     const dz = this.csvDropzone;
@@ -2419,16 +3069,98 @@ class StravaPulseApp {
   processUploadedFile(file) {
     const reader = new FileReader();
     const isXml = file.name.endsWith(".xml");
+    const isGpx = file.name.endsWith(".gpx");
 
     reader.onload = (e) => {
       const content = e.target.result;
-      if (isXml) {
+      if (isGpx || (isXml && content.includes("<gpx"))) {
+        this.parseGpxFile(content, file.name);
+      } else if (isXml) {
         this.parseAppleHealthXml(content, file.name);
       } else {
         this.parseCsvContent(content, file.name);
       }
     };
     reader.readAsText(file);
+  }
+
+  parseGpxFile(gpxString, filename) {
+    try {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(gpxString, "application/xml");
+      const trkpts = xmlDoc.querySelectorAll("trkpt, wpt, rtept");
+      if (trkpts.length < 2) {
+        this.showToast("В GPX файле недостаточно координат трека", "error");
+        return;
+      }
+
+      const coords = [];
+      let elevSum = 0;
+      let prevEle = null;
+      let firstTime = null;
+      let lastTime = null;
+
+      trkpts.forEach((pt) => {
+        const lat = parseFloat(pt.getAttribute("lat"));
+        const lon = parseFloat(pt.getAttribute("lon"));
+        if (!isNaN(lat) && !isNaN(lon)) {
+          coords.push([lat, lon]);
+        }
+        const eleNode = pt.querySelector("ele");
+        if (eleNode) {
+          const ele = parseFloat(eleNode.textContent);
+          if (!isNaN(ele)) {
+            if (prevEle !== null && ele > prevEle) {
+              elevSum += ele - prevEle;
+            }
+            prevEle = ele;
+          }
+        }
+        const timeNode = pt.querySelector("time");
+        if (timeNode) {
+          const t = new Date(timeNode.textContent);
+          if (!firstTime) firstTime = t;
+          lastTime = t;
+        }
+      });
+
+      const dist = this.calculateHaversineDistanceKm(coords);
+      let durationMin = 45;
+      if (firstTime && lastTime) {
+        durationMin = Math.max(Math.round((lastTime - firstTime) / 60000), 1);
+      }
+
+      const trackNameNode = xmlDoc.querySelector("trk > name, gpx > metadata > name");
+      const trackTitle = trackNameNode ? trackNameNode.textContent.trim() : `GPX: ${filename.replace(/\.gpx$/i, "")}`;
+
+      const newWorkout = {
+        id: `gpx-${Date.now()}`,
+        title: trackTitle,
+        type: "Run",
+        date: firstTime ? firstTime.toISOString() : new Date().toISOString(),
+        duration: durationMin,
+        distance: dist,
+        calories: Math.round(dist * 65) || 450,
+        heartRate: 152,
+        elevation: Math.round(elevSum) || 35,
+        notes: `Импортировано из GPX файла (${coords.length} точек)`,
+        device: "GPX Track / Garmin",
+        coordinates: coords,
+        locationName: "GPX Маршрут",
+        kudos: 0,
+        isKudoed: false
+      };
+
+      this.state.workouts.unshift(newWorkout);
+      this.state.saveWorkouts();
+      this.renderWorkoutsFeed();
+      this.renderDashboard();
+      if (this.worldMap) this.renderWorldMapRoutes();
+      this.showImportLog(1, filename);
+      this.showToast(this.t("gpxImportedToast"), "success");
+    } catch (e) {
+      this.showToast("Ошибка при обработке GPX файла", "error");
+    }
   }
 
   parseCsvContent(csvText, filename) {
@@ -2444,7 +3176,6 @@ class StravaPulseApp {
     const newWorkouts = [];
     const newMeals = [];
 
-    // Check if workouts or meals
     const isNutrition = headers.includes("food") || headers.includes("meal") || headers.includes("protein");
 
     for (let i = 1; i < lines.length; i++) {
@@ -2452,7 +3183,6 @@ class StravaPulseApp {
       if (row.length === 0) continue;
 
       if (isNutrition) {
-        // Parse Meal row
         const meal = {
           id: `imp-m-${Date.now()}-${i}`,
           date: row[headers.indexOf("date")] || this.state.getTodayIsoDate(),
@@ -2467,7 +3197,6 @@ class StravaPulseApp {
         newMeals.push(meal);
         importedCount++;
       } else {
-        // Parse Workout row
         const getVal = (candidates, fallback = "") => {
           for (const c of candidates) {
             const idx = headers.indexOf(c);
@@ -2488,6 +3217,15 @@ class StravaPulseApp {
         const elevation = Number(getVal(["elevation", "elevation_gain", "gain_m"])) || 0;
         const notes = getVal(["notes", "description"], `Импортировано из ${filename}`);
 
+        // Parse coordinates column if present
+        let coords = [];
+        const rawCoords = getVal(["coordinates", "coords", "gps"]);
+        if (rawCoords) {
+          try {
+            coords = JSON.parse(rawCoords);
+          } catch (e) { }
+        }
+
         newWorkouts.push({
           id: `imp-w-${Date.now()}-${i}`,
           title,
@@ -2499,6 +3237,7 @@ class StravaPulseApp {
           heartRate,
           elevation,
           notes,
+          coordinates: coords,
           kudos: 0,
           isKudoed: false,
           device: "CSV Import"
@@ -2512,6 +3251,7 @@ class StravaPulseApp {
       this.state.saveWorkouts();
       this.renderWorkoutsFeed();
       this.renderDashboard();
+      if (this.worldMap) this.renderWorldMapRoutes();
     }
     if (newMeals.length > 0) {
       this.state.meals = [...newMeals, ...this.state.meals];
@@ -2543,7 +3283,6 @@ class StravaPulseApp {
     return res;
   }
 
-  // Parse Apple Health export.xml
   parseAppleHealthXml(xmlString, filename) {
     try {
       const parser = new DOMParser();
@@ -2557,7 +3296,6 @@ class StravaPulseApp {
         const activityType = node.getAttribute("workoutActivityType") || node.getAttribute("type") || "";
         if (!activityType && node.tagName.toLowerCase() !== "workout") return;
 
-        // Map HKWorkoutActivityType to simple Sport Type
         let sport = "Run";
         if (activityType.includes("Cycling") || activityType.includes("Ride")) sport = "Ride";
         else if (activityType.includes("Swimming")) sport = "Swim";
@@ -2569,6 +3307,17 @@ class StravaPulseApp {
         const dist = Number(node.getAttribute("totalDistance")) || 0;
         const cal = Math.round(Number(node.getAttribute("totalEnergyBurned")) || 350);
         const startDate = node.getAttribute("startDate") || new Date().toISOString();
+
+        // Sample GPS coords for imported outdoor workouts
+        let coords = [];
+        if (sport === "Run" || sport === "Ride") {
+          coords = [
+            [55.720 + i * 0.005, 37.550 + i * 0.005],
+            [55.723 + i * 0.005, 37.555 + i * 0.005],
+            [55.727 + i * 0.005, 37.560 + i * 0.005],
+            [55.722 + i * 0.005, 37.565 + i * 0.005]
+          ];
+        }
 
         parsedWorkouts.push({
           id: `hk-${Date.now()}-${i}`,
@@ -2583,7 +3332,9 @@ class StravaPulseApp {
           kudos: 3,
           isKudoed: false,
           notes: `Экспортировано из Apple HealthKit (${activityType})`,
-          device: "Apple Watch (HealthKit XML)"
+          device: "Apple Watch (HealthKit XML)",
+          coordinates: coords,
+          locationName: "HealthKit GPS"
         });
         count++;
       });
@@ -2593,6 +3344,7 @@ class StravaPulseApp {
         this.state.saveWorkouts();
         this.renderWorkoutsFeed();
         this.renderDashboard();
+        if (this.worldMap) this.renderWorldMapRoutes();
         this.showImportLog(count, filename);
         this.showToast(`Импортировано ${count} тренировок Apple Health!`, "success");
       } else {
@@ -2610,32 +3362,33 @@ class StravaPulseApp {
 
     if (logBox && countEl && detailsEl) {
       countEl.textContent = `${count} записей добавлено`;
-      detailsEl.textContent = `Файл "${filename}" успешно прочитан, добавлены данные и пересчитаны графики.`;
+      detailsEl.textContent = `Файл "${filename}" успешно прочитан, добавлены данные и маршруты на карту.`;
       logBox.classList.remove("hidden");
     }
   }
 
   downloadCsvTemplate() {
     const csvContent =
-      "title,type,date,duration,distance,calories,heart_rate,elevation,notes\n" +
-      'Утренний темповый бег,Run,2026-10-15T08:30:00,45,8.2,540,152,30,"Отличный темп и самочувствие"\n' +
-      'Велозаезд по шоссе,Ride,2026-10-14T17:00:00,60,25.4,620,138,180,"Аэробная база"\n' +
-      'Силовая тренировка,Strength,2026-10-13T19:00:00,50,0,420,140,0,"Приседания и жим"\n';
+      "title,type,date,duration,distance,calories,heart_rate,elevation,notes,coordinates\n" +
+      'Утренний темповый бег,Run,2026-10-15T08:30:00,45,8.2,540,152,30,"Отличный темп","[[55.715,37.553],[55.725,37.565],[55.715,37.553]]"\n' +
+      'Велозаезд по шоссе,Ride,2026-10-14T17:00:00,60,25.4,620,138,180,"Аэробная база","[[55.709,37.542],[55.735,37.498],[55.709,37.542]]"\n' +
+      'Силовая тренировка,Strength,2026-10-13T19:00:00,50,0,420,140,0,"Приседания и жим","[]"\n';
 
     this.downloadFile("stravapulse_template.csv", csvContent, "text/csv;charset=utf-8;");
-    this.showToast("Шаблон CSV скачан!", "info");
+    this.showToast("Шаблон CSV с координатами скачан!", "info");
   }
 
   exportWorkoutsCsv() {
-    const headers = "id,title,type,date,duration,distance,calories,heart_rate,elevation,notes\n";
+    const headers = "id,title,type,date,duration,distance,calories,heart_rate,elevation,notes,coordinates\n";
     const rows = this.state.workouts
       .map((w) => {
-        return `"${w.id}","${(w.title || "").replace(/"/g, '""')}","${w.type}","${w.date}",${w.duration},${w.distance || 0},${w.calories || 0},${w.heartRate || ""},${w.elevation || 0},"${(w.notes || "").replace(/"/g, '""')}"`;
+        const coordsStr = w.coordinates ? JSON.stringify(w.coordinates).replace(/"/g, '""') : "[]";
+        return `"${w.id}","${(w.title || "").replace(/"/g, '""')}","${w.type}","${w.date}",${w.duration},${w.distance || 0},${w.calories || 0},${w.heartRate || ""},${w.elevation || 0},"${(w.notes || "").replace(/"/g, '""')}","${coordsStr}"`;
       })
       .join("\n");
 
     this.downloadFile("stravapulse_workouts_export.csv", headers + rows, "text/csv;charset=utf-8;");
-    this.showToast("Тренировки экспортированы в CSV!", "success");
+    this.showToast("Тренировки экспортированы в CSV с GPS-треками!", "success");
   }
 
   exportNutritionCsv() {
@@ -2652,7 +3405,7 @@ class StravaPulseApp {
 
   exportFullBackup() {
     const backupData = {
-      version: "2.0",
+      version: "2.1",
       exportDate: new Date().toISOString(),
       settings: this.state.settings,
       workouts: this.state.workouts,
@@ -2715,11 +3468,8 @@ class StravaPulseApp {
 
     const avgHr = hrCount > 0 ? Math.round(hrSum / hrCount) : 142;
 
-    // Meals 7d
     let food7d = 0;
     let protein7d = 0;
-    const today = this.state.getTodayIsoDate();
-
     this.state.meals.forEach((m) => {
       food7d += Number(m.cal) || 0;
       protein7d += Number(m.protein) || 0;
@@ -2727,7 +3477,6 @@ class StravaPulseApp {
 
     const avgDailyProtein = (protein7d / 7).toFixed(0);
 
-    // Context card elements
     const distEl = document.getElementById("aiStatDist");
     const hrEl = document.getElementById("aiStatHr");
     const calEl = document.getElementById("aiStatCal");
@@ -2739,7 +3488,6 @@ class StravaPulseApp {
     if (calEl) calEl.textContent = `${(food7d / 7).toFixed(0)} / ${(cal7d / 7).toFixed(0)} ккал`;
     if (protEl) protEl.textContent = `${avgDailyProtein} г/день`;
 
-    // Fatigue / Recovery index calculation
     let recoveryScore = 95;
     if (avgHr > 158) recoveryScore -= 18;
     if (dist7d > 50) recoveryScore -= 12;
@@ -2769,7 +3517,6 @@ class StravaPulseApp {
   }
 
   sendCoachMessage(userText, intent = null) {
-    // Add user message
     const userMsg = {
       sender: "user",
       text: userText,
@@ -2779,13 +3526,11 @@ class StravaPulseApp {
     this.state.saveChat();
     this.renderChatMessages();
 
-    // Show typing indicator
     const typing = document.getElementById("typingIndicator");
     if (typing) typing.classList.remove("hidden");
     const container = document.getElementById("coachChatContainer");
     if (container) container.scrollTop = container.scrollHeight;
 
-    // Determine engine: Local or Cloud Gemini
     const isGemini = this.state.settings.aiEngine === "gemini" && this.state.settings.geminiApiKey;
 
     if (isGemini) {
@@ -2795,13 +3540,11 @@ class StravaPulseApp {
           this.addAiResponse(aiReply);
         })
         .catch(() => {
-          // Fallback to local
           const localReply = this.generateLocalAIResponse(userText, intent);
           if (typing) typing.classList.add("hidden");
           this.addAiResponse(localReply);
         });
     } else {
-      // Local Heuristic AI Engine with realistic thinking latency
       setTimeout(() => {
         const localReply = this.generateLocalAIResponse(userText, intent);
         if (typing) typing.classList.add("hidden");
@@ -2867,17 +3610,14 @@ class StravaPulseApp {
   formatMarkdownHtml(raw) {
     if (!raw) return "";
     let s = raw;
-    // Bold
     s = s.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-    // Bullet points
     s = s.replace(/^- (.*$)/gim, "<li>$1</li>");
     s = s.replace(/(<li>.*<\/li>)/gms, "<ul>$1</ul>");
-    // Paragraphs
     s = s.split("\n\n").map((p) => (p.startsWith("<ul>") ? p : `<p>${p.replace(/\n/g, "<br>")}</p>`)).join("");
     return s;
   }
 
-  // Local Algorithmic AI Fitness Coach Engine
+  // Local Algorithmic AI Fitness Coach Engine (with Geography and Terrain awareness)
   generateLocalAIResponse(prompt, intent) {
     const s = this.state.settings;
     const workouts = this.state.workouts;
@@ -2890,6 +3630,8 @@ class StravaPulseApp {
     let runsCount = 0;
     let rideCount = 0;
     let maxDist = 0;
+    let gpsTrackedCount = 0;
+    const locations = [];
 
     weekWorkouts.forEach((w) => {
       const d = Number(w.distance) || 0;
@@ -2902,13 +3644,14 @@ class StravaPulseApp {
       }
       if (w.type === "Run") runsCount++;
       if (w.type === "Ride") rideCount++;
+      if (w.coordinates && w.coordinates.length > 1) gpsTrackedCount++;
+      if (w.locationName && !locations.includes(w.locationName)) locations.push(w.locationName);
     });
 
     const avgHr = hrCount > 0 ? Math.round(hrSum / hrCount) : 144;
     const pTarget = s.proteinGoal || 150;
     const calTarget = s.dailyCalGoal || 2400;
 
-    // Detect prompt category if not explicit
     const pLower = prompt.toLowerCase();
     const isWeekly = intent === "analyze-weekly" || pLower.includes("недел") || pLower.includes("week") || pLower.includes("strava");
     const isNutr = intent === "eval-nutrition" || pLower.includes("питан") || pLower.includes("кбжу") || pLower.includes("protein") || pLower.includes("калор");
@@ -2920,12 +3663,13 @@ class StravaPulseApp {
 
 **Итоговый объём:** Ты набрал **${totalDist.toFixed(1)} км** за ${weekWorkouts.length} тренировок и сжёг **${totalCal.toLocaleString()} ккал**! 🔥
 
-**Ключевые инсайты:**
-- **Беговой прогресс:** Совершено ${runsCount} пробежек. Самый длинный кросс составил **${maxDist.toFixed(1)} км**. Твой аэробный фундамент растёт.
-- **Тренировочный импульс (TRIMP):** Нагрузка сбалансирована, средний пульс нагрузок **${avgHr} уд/мин** (оптимальная зона 2-3).
-- **Сравнение с целью:** Для твоей цели "${s.fitnessGoal}" такой объём даёт прирост VO2 Max на ~1.5% в месяц.
+**География и GPS-маршруты:**
+- **GPS-трекинг:** Зафиксировано **${gpsTrackedCount} маршрутов** на карте мира (${locations.slice(0, 3).join(", ") || "Лужники, Парк Горького"}).
+- **Беговой прогресс:** Совершено ${runsCount} пробежек. Самый длинный кросс составил **${maxDist.toFixed(1)} км**.
+- **Тренировочный импульс (TRIMP):** Нагрузка сбалансирована, средний пульс нагрузок **${avgHr} уд/мин** (аэробная база в норме).
+- **Сравнение с целью:** Для твоей цели "${s.fitnessGoal}" такой объём даёт прирост аэробной мощности на ~1.5% в месяц.
 
-> **Совет тренера:** Добавь одну интервальную сессию с ускорениями (например, 6x400м через 200м трусцы), чтобы ещё быстрее прокачать ПАНО (порог анаэробного обмена)!`;
+> **Совет тренера:** Открой раздел **"Карта маршрутов"** и исследуй рельеф набережных — чередуй плоский бег с холмистыми участками для тренировки силовой выносливости!`;
     }
 
     if (isNutr) {
@@ -2934,9 +3678,9 @@ class StravaPulseApp {
 **Твой профиль:** Вес ${s.weight} кг | Цель: **${calTarget} ккал/день** | Норма белка: **${pTarget} г** (${(pTarget / s.weight).toFixed(1)} г/кг веса).
 
 **Анализ дневника питания:**
-- **Белковый оптимум:** Ты держишь высокий уровень протеина. Для восстановления мышечных волокон после объёма в ${totalDist.toFixed(1)} км это отлично предохраняет от катаболизма.
+- **Белковый оптимум:** Ты держишь высокий уровень протеина. Для восстановления после набега в ${totalDist.toFixed(1)} км это отлично предохраняет от катаболизма.
 - **Углеводная загрузка:** Перед длительными беговыми и велотренировками добавляй медленные углеводы (овсянка, киноа, бурый рис) за 2-2.5 часа до старта.
-- **Гидратация:** Поддерживай не менее **${s.dailyWaterGoal || 2500} мл чистой воды** в день. Каждые потерянные 2% жидкости снижают аэробную мощность на 10%!`;
+- **Гидратация:** Поддерживай не менее **${s.dailyWaterGoal || 2500} мл чистой воды** в день.`;
     }
 
     if (isHr) {
@@ -2965,35 +3709,31 @@ class StravaPulseApp {
       return `### 📋 Персональный план на завтра
 
 **Тренировочная сессия:**
-- **Тип:** Развивающий кросс по пересечённой местности или шоссейный темп
+- **Тип:** Развивающий кросс по парку или набережной (с GPS-трекингом)
 - **Дистанция:** **8.0 - 9.5 км**
 - **Целевой темп:** Лёгкий/Аэробный (Зона 2, пульс 135-145 уд/мин)
 - **Разминка:** 7 минут динамической растяжки и суставной гимнастики
 
 **План питания:**
-- **Завтрак:** Сложные углеводы (овсяная каша с орехами и ягодами) + яйцо пашот (450 ккал)
-- **Обед:** Куриное филе или лосось с диким рисом и свежей зеленью (620 ккал)
+- **Завтрак:** Овсяная каша с орехами и ягодами + яйцо пашот (450 ккал)
+- **Обед:** Лосось или куриное филе с киноа и зелёными овощами (620 ккал)
 - **Полдник:** Творог 5% или протеиновый коктейль с бананом (280 ккал)
-- **Ужин:** Запечённая рыба или индейка со спаржей и овощным салатом (520 ккал)
+- **Ужин:** Запечённая индейка со спаржей и овощным салатом (520 ккал)
 - **Вода:** 2.5 литра равномерно в течение дня.
 
 Готов крушить рекорды? Жми кнопку *"Записать тренировку"* сразу после финиша! 🚀`;
     }
 
-    // Default intelligent athletic advice
     return `### 🏆 Спортивная консультация для ${s.athleteName}
 
-Я проанализировал твои данные: ты выполнил **${weekWorkouts.length} тренировок** суммарной дистанцией **${totalDist.toFixed(1)} км** при среднем пульсе **${avgHr} bpm**.
+Я проанализировал твои данные: ты выполнил **${weekWorkouts.length} тренировок** суммарной дистанцией **${totalDist.toFixed(1)} км** (${gpsTrackedCount} треков на карте мира) при среднем пульсе **${avgHr} bpm**.
 
 По твоему вопросу:
-- **Тренировочный режим:** Твоя недельная нагрузка соответствует прогрессирующему атлету. Соблюдай принцип суперкомпенсации — давай телу 48 часов между пиковыми HIIT/интервальными сессиями.
+- **Тренировочный режим:** Твоя недельная нагрузка соответствует прогрессирующему атлету. Соблюдай принцип суперкомпенсации — давай телу 48 часов между пиковыми интервальными сессиями.
 - **Питание и БЖУ:** Держи около 2 г белка на кг веса (${Math.round(s.weight * 2)} г) для качественного восстановления.
-- **Сон и HealthKit:** Контролируй вариабельность сердечного ритма (HRV) в Apple Watch — при падении HRV более чем на 15% делай разгрузочный день.
-
-Есть конкретный вопрос по темпу, дистанции или диете? Задай его прямо сейчас!`;
+- **Карта маршрутов:** Ты можешь нарисовать собственный маршрут перед выходом на пробежку в конструкторе тренировки!`;
   }
 
-  // Google Gemini Cloud API Integration
   async callGeminiApi(userPrompt) {
     const key = this.state.settings.geminiApiKey;
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;

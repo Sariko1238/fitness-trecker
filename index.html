@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -55,6 +56,11 @@
           <i class="fa-solid fa-person-running"></i>
           <span data-i18n="navWorkouts">Лента тренировок</span>
           <span class="nav-badge" id="workoutsCountBadge">0</span>
+        </button>
+        <button class="nav-item" data-tab="map">
+          <i class="fa-solid fa-map-location-dot"></i>
+          <span data-i18n="navMap">Карта маршрутов</span>
+          <span class="nav-badge gps-badge">GPS</span>
         </button>
         <button class="nav-item" data-tab="nutrition">
           <i class="fa-solid fa-utensils"></i>
@@ -351,6 +357,31 @@
               </div>
             </div>
           </div>
+
+          <!-- GPS World Map Highlight Card on Dashboard -->
+          <div class="card dashboard-map-highlight-card">
+            <div class="dash-map-content">
+              <div class="dash-map-meta">
+                <div class="dash-map-badge">
+                  <i class="fa-solid fa-map-location-dot"></i>
+                  <span data-i18n="dashMapBadge">Strava Live GPS Map</span>
+                </div>
+                <h3 data-i18n="dashMapTitle">Карта маршрутов и географический прогресс</h3>
+                <p data-i18n="dashMapDesc">Все ваши пробежки и велозаезды синхронизированы на интерактивной карте мира. Исследуйте треки, высотный рельеф и темп в реальном времени.</p>
+                <div class="dash-map-pills">
+                  <span class="badge badge-strava" id="dashGpsTracksCount">0 треков с GPS</span>
+                  <span class="badge badge-green" id="dashGpsTotalDist">0.0 км на карте</span>
+                  <span class="badge badge-purple" id="dashGpsLocations">Москва • Лужники</span>
+                </div>
+              </div>
+              <div class="dash-map-action">
+                <button class="btn btn-primary pulse-shadow" id="openWorldMapFromDashBtn">
+                  <i class="fa-solid fa-globe"></i>
+                  <span data-i18n="btnOpenWorldMap">Открыть Карту Мира</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </section>
 
         <!-- ======================================================== -->
@@ -420,6 +451,81 @@
               <i class="fa-solid fa-plus"></i>
               <span data-i18n="btnRecordWorkout">Записать тренировку</span>
             </button>
+          </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- TAB: GPS WORLD MAP & RUNNING ROUTES (STRAVA MAPS)        -->
+        <!-- ======================================================== -->
+        <section class="tab-pane" id="tab-map">
+          <div class="map-page-layout">
+            <!-- Map Top Control Bar -->
+            <div class="map-toolbar">
+              <div class="map-toolbar-left">
+                <div class="sport-filter-pills" id="mapSportFilters">
+                  <button class="map-filter-pill active" data-sport="all" data-i18n="sportAll">Все активности</button>
+                  <button class="map-filter-pill" data-sport="Run" data-i18n="sportRun">🏃 Бег</button>
+                  <button class="map-filter-pill" data-sport="Ride" data-i18n="sportRide">🚴 Велосипед</button>
+                  <button class="map-filter-pill" data-sport="Walk" data-i18n="sportWalk">🚶 Ходьба</button>
+                </div>
+              </div>
+
+              <div class="map-toolbar-right">
+                <!-- Select Route Dropdown -->
+                <div class="route-select-wrap">
+                  <i class="fa-solid fa-route select-icon"></i>
+                  <select id="mapRouteSelect" class="form-select map-route-select">
+                    <option value="all">🗺️ Все маршруты на карте</option>
+                  </select>
+                </div>
+
+                <!-- Locate Me Button -->
+                <button class="btn btn-outline btn-sm" id="btnLocateMe" title="Моя текущая геопозиция">
+                  <i class="fa-solid fa-crosshairs"></i>
+                  <span data-i18n="btnLocateMe">Найти меня</span>
+                </button>
+
+                <!-- Fit All Routes Button -->
+                <button class="btn btn-primary btn-sm" id="btnFitAllRoutes" title="Показать все маршруты">
+                  <i class="fa-solid fa-earth-americas"></i>
+                  <span data-i18n="btnFitAll">Весь мир</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Leaflet Interactive Map Container & Floating Overlay -->
+            <div class="map-stage-wrapper">
+              <div id="worldMap" class="world-map-leaflet"></div>
+
+              <!-- Floating Map Telemetry Overlay -->
+              <div class="map-floating-stats">
+                <div class="map-stat-item">
+                  <span class="m-label" data-i18n="mapGpsTracks">GPS Маршрутов</span>
+                  <strong class="m-val text-strava" id="mapStatTracksCount">0</strong>
+                </div>
+                <div class="map-stat-divider"></div>
+                <div class="map-stat-item">
+                  <span class="m-label" data-i18n="mapTotalKm">Общая дистанция</span>
+                  <strong class="m-val" id="mapStatKm">0.0 км</strong>
+                </div>
+                <div class="map-stat-divider"></div>
+                <div class="map-stat-item">
+                  <span class="m-label" data-i18n="mapActiveCity">Локации</span>
+                  <strong class="m-val text-green" id="mapStatLocations">Москва • Парк Горького</strong>
+                </div>
+              </div>
+
+              <!-- Quick Map Route Drawer / Cards strip -->
+              <div class="map-routes-drawer" id="mapRoutesDrawer">
+                <div class="drawer-header">
+                  <span class="drawer-title"><i class="fa-solid fa-shoe-prints text-strava"></i> <span data-i18n="drawerRoutesTitle">Маршруты в фокусе</span></span>
+                  <span class="drawer-count" id="drawerRoutesCount">0</span>
+                </div>
+                <div class="drawer-cards-row" id="drawerCardsRow">
+                  <!-- Dynamically populated -->
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -1015,6 +1121,43 @@
           <span class="preview-val" id="workoutPacePreviewVal">—</span>
         </div>
 
+        <!-- Interactive GPS Route Builder Mini-Map -->
+        <div class="form-group modal-route-builder-group">
+          <div class="route-builder-header">
+            <label><i class="fa-solid fa-map-location-dot text-strava"></i> <span data-i18n="routeBuilderLabel">Интерактивный GPS-маршрут (кликните для рисования)</span></label>
+            <div class="route-builder-badges">
+              <span class="badge badge-strava" id="builderPointsCount">0 точек</span>
+              <span class="badge badge-green" id="builderDistCalc">0.00 км</span>
+            </div>
+          </div>
+          <div class="modal-map-wrap">
+            <div id="modalRouteMap" class="modal-route-map"></div>
+            <!-- Live GPS Simulation / Tracking HUD Overlay -->
+            <div class="live-gps-overlay hidden" id="liveGpsOverlay">
+              <div class="live-gps-hud">
+                <span class="live-dot-pulse"></span>
+                <span class="live-hud-time" id="liveGpsTime">00:00</span>
+                <span class="live-hud-dist" id="liveGpsDist">0.00 км</span>
+                <span class="live-hud-pace" id="liveGpsPace">5:15 /км</span>
+              </div>
+            </div>
+          </div>
+          <div class="route-builder-actions">
+            <button type="button" class="btn btn-sm btn-outline" id="liveGpsRecordBtn">
+              <i class="fa-solid fa-satellite-dish"></i>
+              <span data-i18n="btnLiveGps">Записать по GPS (Live)</span>
+            </button>
+            <button type="button" class="btn btn-sm btn-secondary" id="presetRouteBtn">
+              <i class="fa-solid fa-route"></i>
+              <span data-i18n="btnPresetRoute">Круг в парке</span>
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger" id="clearRouteBtn" title="Очистить маршрут">
+              <i class="fa-solid fa-eraser"></i>
+              <span data-i18n="btnClearRoute">Очистить</span>
+            </button>
+          </div>
+        </div>
+
         <div class="form-group">
           <label for="workoutNotesInput" data-i18n="fieldNotes">Заметки и ощущения</label>
           <textarea id="workoutNotesInput" rows="3" placeholder="Лёгкие ноги, бодрый темп, отличная погода..." class="form-control"></textarea>
@@ -1227,6 +1370,10 @@
       <i class="fa-solid fa-person-running"></i>
       <span data-i18n="mobWorkouts">Тренировки</span>
     </button>
+    <button class="mobile-nav-item" data-tab="map">
+      <i class="fa-solid fa-map-location-dot"></i>
+      <span data-i18n="mobMap">Карта</span>
+    </button>
     <button class="mobile-nav-item" data-tab="nutrition">
       <i class="fa-solid fa-utensils"></i>
       <span data-i18n="mobNutrition">Питание</span>
@@ -1241,8 +1388,9 @@
     </button>
   </nav>
 
-  <!-- External libraries: Chart.js CDN -->
+  <!-- External libraries: Chart.js & Leaflet.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <!-- Application Logic -->
   <script src="app.js"></script>
 </body>

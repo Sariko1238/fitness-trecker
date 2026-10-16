@@ -3032,3 +3032,582 @@ textarea.form-control {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ==========================================================================
+   STRAVA GPS WORLD MAP & LEAFLET.JS STYLING
+   ========================================================================== */
+
+/* Navigation GPS Badge */
+.nav-badge.gps-badge {
+  background: rgba(0, 229, 255, 0.2);
+  color: var(--apple-stand);
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Dashboard GPS Highlight Card */
+.dashboard-map-highlight-card {
+  margin-top: 24px;
+  background: linear-gradient(135deg, rgba(252, 76, 2, 0.08) 0%, var(--bg-card) 60%);
+  border: 1px solid rgba(252, 76, 2, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-map-highlight-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 250px;
+  height: 100%;
+  background: radial-gradient(circle, rgba(252, 76, 2, 0.15) 0%, transparent 75%);
+  pointer-events: none;
+}
+
+.dash-map-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.dash-map-meta {
+  max-width: 680px;
+}
+
+.dash-map-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: var(--strava-orange-light);
+  color: var(--strava-orange);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.dash-map-meta h3 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.3rem;
+  margin-bottom: 6px;
+}
+
+.dash-map-meta p {
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  margin-bottom: 14px;
+}
+
+.dash-map-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Map Tab Page Layout */
+.map-page-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.map-toolbar {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.map-toolbar-left, .map-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sport-filter-pills {
+  display: flex;
+  background: var(--bg-surface);
+  border-radius: var(--radius-full);
+  padding: 4px;
+  gap: 4px;
+}
+
+.map-filter-pill {
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.map-filter-pill:hover {
+  color: var(--text-main);
+}
+
+.map-filter-pill.active {
+  background: var(--strava-orange);
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px var(--strava-orange-glow);
+}
+
+.route-select-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.route-select-wrap .select-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--strava-orange);
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.map-route-select {
+  padding-left: 32px;
+  font-size: 0.82rem;
+  height: 36px;
+  min-width: 200px;
+}
+
+/* Leaflet Map Stage Container */
+.map-stage-wrapper {
+  position: relative;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-md);
+  background: #101115;
+}
+
+.world-map-leaflet {
+  width: 100%;
+  height: 620px;
+  z-index: 10;
+}
+
+/* Floating Telemetry Stats on Map */
+.map-floating-stats {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 500;
+  background: rgba(22, 23, 29, 0.88);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+}
+
+[data-theme="light"] .map-floating-stats {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: #E2E8F0;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.map-stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.m-label {
+  font-size: 0.68rem;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.m-val {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
+.map-stat-divider {
+  width: 1px;
+  height: 26px;
+  background: var(--border-subtle);
+}
+
+/* Map Routes Drawer at Bottom */
+.map-routes-drawer {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  z-index: 500;
+  background: rgba(18, 19, 24, 0.9);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-lg);
+  padding: 12px 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  pointer-events: auto;
+}
+
+[data-theme="light"] .map-routes-drawer {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: #E2E8F0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 0.78rem;
+}
+
+.drawer-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.drawer-count {
+  background: var(--strava-orange);
+  color: #FFFFFF;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.drawer-cards-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.drawer-route-card {
+  min-width: 210px;
+  max-width: 240px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.drawer-route-card:hover, .drawer-route-card.active {
+  border-color: var(--strava-orange);
+  background: var(--bg-card);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(252, 76, 2, 0.2);
+}
+
+.drawer-route-title {
+  font-weight: 700;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-main);
+}
+
+.drawer-route-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+}
+
+.drawer-route-meta strong {
+  color: var(--strava-orange);
+  font-family: var(--font-display);
+}
+
+/* Custom Strava Leaflet Popups */
+.leaflet-popup-content-wrapper {
+  background: #181920 !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.75) !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+[data-theme="light"] .leaflet-popup-content-wrapper {
+  background: #FFFFFF !important;
+  color: #111827 !important;
+  border-color: #E2E8F0 !important;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.15) !important;
+}
+
+.leaflet-popup-tip {
+  background: #181920 !important;
+}
+
+[data-theme="light"] .leaflet-popup-tip {
+  background: #FFFFFF !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  line-height: 1.4 !important;
+  min-width: 240px;
+}
+
+.strava-popup-card {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.popup-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.popup-date {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+}
+
+.popup-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+}
+
+.popup-stat-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.popup-stat-col span {
+  font-size: 0.65rem;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.popup-stat-col strong {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+.popup-btn-focus {
+  width: 100%;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--strava-orange);
+  color: #FFFFFF;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  border: none;
+  transition: background var(--transition-fast);
+}
+
+.popup-btn-focus:hover {
+  background: var(--strava-orange-hover);
+}
+
+/* Custom Marker Pins */
+.custom-pin {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  font-size: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+.pin-start {
+  background: #30D158;
+  border: 2px solid #FFFFFF;
+}
+
+.pin-start::after {
+  content: "";
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-full);
+  border: 2px solid #30D158;
+  animation: pulseExpand 2s infinite;
+}
+
+.pin-finish {
+  background: #FC4C02;
+  border: 2px solid #FFFFFF;
+}
+
+.pin-user-location {
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-full);
+  background: #0A84FF;
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 0 16px rgba(10, 132, 255, 0.8);
+  position: relative;
+}
+
+.pin-user-location::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  border: 2px solid #0A84FF;
+  animation: pulseExpand 1.6s infinite;
+}
+
+/* Modal Route Builder */
+.modal-route-builder-group {
+  margin-top: 6px;
+}
+
+.route-builder-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.route-builder-badges {
+  display: flex;
+  gap: 6px;
+}
+
+.modal-map-wrap {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+}
+
+.modal-route-map {
+  width: 100%;
+  height: 220px;
+  background: #121317;
+}
+
+.live-gps-overlay {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 500;
+  pointer-events: none;
+}
+
+.live-gps-hud {
+  background: rgba(18, 19, 24, 0.92);
+  border: 1px solid var(--strava-orange);
+  border-radius: var(--radius-full);
+  padding: 5px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  box-shadow: 0 4px 16px rgba(252, 76, 2, 0.35);
+}
+
+.live-dot-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: #FF2D55;
+  animation: pulseBeat 1s infinite;
+}
+
+.route-builder-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* Feed Cards Mini-Map Preview */
+.feed-card-map-wrap {
+  margin-top: 14px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  position: relative;
+  height: 140px;
+  background: var(--bg-surface);
+}
+
+.feed-mini-map {
+  width: 100%;
+  height: 100%;
+}
+
+.btn-open-in-world-map {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  z-index: 400;
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  border-radius: var(--radius-full);
+  background: rgba(18, 19, 24, 0.85);
+  backdrop-filter: blur(8px);
+  color: #FFFFFF;
+  border: 1px solid var(--border-subtle);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--transition-fast);
+}
+
+.btn-open-in-world-map:hover {
+  background: var(--strava-orange);
+  border-color: var(--strava-orange);
+}
+
